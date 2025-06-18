@@ -27,6 +27,6 @@ jobs:
       - name: Deploy Helm Chart
         run: |
           helm upgrade --install niche-explorer helm/niche_explorer \
-            --namespace team-dev-ops
+            --namespace niche-explorer
         env:
           KUBECONFIG_FILE: ${{ secrets.KUBECONFIG }}
