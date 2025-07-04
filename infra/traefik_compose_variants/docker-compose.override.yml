@@ -1,0 +1,37 @@
+# This file is for local development overrides.
+# It is automatically merged with the base docker-compose.yml by Docker Compose.
+services:
+  traefik:
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "8080:8080" # Traefik Dashboard
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`${DOMAIN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.dashboard.service=api@internal"
+
+  client:
+    labels:
+      # Override the host rule to avoid using the DOMAIN environment variable
+      - "traefik.http.routers.client.rule=Host(`${DOMAIN}`)"
+      # This label is merged with the production labels, explicitly disabling TLS
+      - "traefik.http.routers.client.tls=false"
+
+  api-server:
+    labels:
+      # Local rule without the 'letsencrypt' resolver
+      - "traefik.http.routers.api-server.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.api-server.priority=100"
+      # The stripprefix middleware is removed.
+      - "traefik.http.routers.api-server.middlewares=cors-headers"
+      # This label is merged with the production labels, explicitly disabling TLS
+      - "traefik.http.routers.api-server.tls=false"
+      # This label overrides the production CORS policy for local development
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolalloworiginlist=http://${DOMAIN}"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolallowheaders=*"
+      - "traefik.http.services.api-server.loadbalancer.server.port=8080" 

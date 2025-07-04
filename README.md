@@ -35,16 +35,25 @@ git clone https://github.com/your-org/team-dev_ops.git
 cd team-dev_ops
 
 # Configure environment
-echo "GOOGLE_API_KEY=your_gemini_api_key_here" > .env
+cp .env.example .env
 
 # Generate OpenAPI client libraries
 bash api/scripts/gen-all.sh
 
-# Start all services
-docker compose -f infra/docker-compose.yml up --build
-```
+# Deployment from project root:
+docker compose --env-file ./.env -f infra/docker-compose.yml up --build -d
+
+# ===================================================================
+# Using traefik:
+# - Local development (uses override with hard-coded localhost rules)
+docker compose --env-file ./.env -f infra/traefik_compose_variants/docker-compose.yml -f infra/traefik_compose_variants/docker-compose.override.yml up --build -d
+
+# - Server / production deployment
+docker compose --env-file ./.env -f infra/traefik_compose_variants/docker-compose.yml up --build -d
+# ====================================================================
 
 Access the application at: http://localhost
+Traefik dashboard: http://localhost:8080/dashboard/
 
 ## API Documentation
 

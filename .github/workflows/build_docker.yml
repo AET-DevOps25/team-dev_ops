@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feat/k8shelm_deployment # Dummy deployment for testing the new workflow
   workflow_dispatch:
 
 jobs:

@@ -14,21 +14,12 @@ security: []
 
 # Default servers - tools will show all when no specific server is selected
 servers:
-  - url: http://ge74tif.student.k8s.aet.cit.tum.de:8080
-    description: Spring API Gateway - Main orchestration endpoints
-  - url: http://ge74tif.student.k8s.aet.cit.tum.de:8000  
-    description: GenAI Service - AI classification and embeddings
-  - url: http://ge74tif.student.k8s.aet.cit.tum.de:8200
-    description: Article Fetcher Service - Content retrieval
-  - url: http://ge74tif.student.k8s.aet.cit.tum.de:8100
-    description: Topic Discovery Service - Clustering and analysis
+  - url: /
+    description: API Gateway - All requests are routed through the gateway.
 
 paths:
   # Spring API Gateway endpoints (ge74tif.student.k8s.aet.cit.tum.de:8080)
   /api/v1/analyses:
-    servers:
-      - url: http://ge74tif.student.k8s.aet.cit.tum.de:8080
-        description: Spring API Gateway
     post:
       tags: [Analysis]
       summary: Launch analysis job
@@ -49,8 +40,18 @@ paths:
               schema:
                 type: string
               description: URL of the newly created analysis resource.
-        "400": { description: Invalid request }
-        "500": { description: Internal error }
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     get:
       tags: [Analysis]
       summary: List analyses (paginated)
@@ -80,11 +81,14 @@ paths:
                     type: array
                     items: { $ref: '#/components/schemas/AnalysisResponse' }
                 required: [total, limit, offset, items]
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/v1/analyses/{id}:
-    servers:
-      - url: http://ge74tif.student.k8s.aet.cit.tum.de:8080
-        description: Spring API Gateway
     get:
       tags: [Analysis]
       summary: Poll analysis status
@@ -103,7 +107,18 @@ paths:
               schema: { $ref: '#/components/schemas/AnalysisResponse' }
         "202":
           description: Analysis still in progress
-        "404": { description: Analysis not found }
+        "404":
+          description: Analysis not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     delete:
       tags: [Analysis]
       summary: Delete analysis
@@ -122,13 +137,15 @@ paths:
         "403":
           description: Forbidden
           content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
-        "404": { description: Analysis not found }
+        "404":
+          description: Analysis not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   # GenAI Service endpoints (ge74tif.student.k8s.aet.cit.tum.de:8000)
   /api/v1/classify:
-    servers:
-      - url: http://ge74tif.student.k8s.aet.cit.tum.de:8000
-        description: GenAI Service
     post:
       tags: [AI]
       summary: Classify query intent (research vs community)
@@ -148,11 +165,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ClassifyResponse'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/v1/embeddings:
-    servers:
-      - url: http://ge74tif.student.k8s.aet.cit.tum.de:8000
-        description: GenAI Service
     post:
       tags: [AI]
       summary: Generate embeddings
@@ -171,6 +197,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EmbeddingResponse'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     get:
       tags: [AI]
       summary: Retrieve cached embeddings
@@ -194,11 +232,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EmbeddingResponse'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/v1/query/build/{source}:
-    servers:
-      - url: http://ge74tif.student.k8s.aet.cit.tum.de:8000
-        description: GenAI Service
     post:
       tags: [AI]
       summary: Build source-specific query
@@ -225,12 +272,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryBuilderResponse'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   # Article Fetcher Service endpoints (ge74tif.student.k8s.aet.cit.tum.de:8200)
   /api/v1/articles:
-    servers:
-      - url: http://ge74tif.student.k8s.aet.cit.tum.de:8200
-        description: Article Fetcher Service
     post:
       tags: [Articles]
       summary: Fetch articles
@@ -249,11 +305,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ArticleFetchResponse'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/v1/sources/{source}/categories:
-    servers:
-      - url: http://ge74tif.student.k8s.aet.cit.tum.de:8200
-        description: Article Fetcher Service
     get:
       tags: [Articles]
       summary: Get source categories
@@ -278,12 +343,15 @@ paths:
                   type: array
                   items:
                     type: string
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   # Topic Discovery Service endpoints (ge74tif.student.k8s.aet.cit.tum.de:8100)
   /api/v1/topics/discover:
-    servers:
-      - url: http://ge74tif.student.k8s.aet.cit.tum.de:8100
-        description: Topic Discovery Service
     post:
       tags: [Topics]
       summary: Discover topics
@@ -302,6 +370,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TopicDiscoveryResponse'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 components:
   schemas:
@@ -629,6 +709,10 @@ components:
       properties:
         code: { type: string }
         message: { type: string }
+        details:
+          type: object
+          additionalProperties: true
+          description: Optional structured details about the error
       required: [code, message]
 
   securitySchemes: {}

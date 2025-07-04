@@ -11,7 +11,7 @@ import type {
 
 // Create configuration for the API client
 const configuration = new Configuration({
-  basePath: "http://ge74tif.student.k8s.aet.cit.tum.de:8080", 
+  basePath: window.location.origin,
 });
 
 // Initialize API clients

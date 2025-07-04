@@ -9,15 +9,15 @@ COPY api/openapi.yaml ./api/openapi.yaml
 # Copy Gradle wrapper, settings, and source code
 COPY services/spring-api/ .
 
-# Build only the api-server sub-module to keep the image small
-RUN gradle :api-server:bootJar --no-daemon
+# Build the application
+RUN gradle bootJar --no-daemon
 
 # ---- runtime image ----
 FROM eclipse-temurin:21-jre AS runtime
 WORKDIR /app
 
 # Copy the JAR produced in the previous stage
-COPY --from=build /workspace/src/api-server/build/libs/*.jar app.jar
+COPY --from=build /workspace/build/libs/*.jar app.jar
 
 # Expose Spring Boot port
 EXPOSE 8080

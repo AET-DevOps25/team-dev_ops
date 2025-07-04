@@ -1,0 +1,135 @@
+services:
+  # Traefik API Gateway
+  traefik:
+    image: traefik:v3.0
+    command:
+      # --- Production Configuration ---
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # Define entrypoints for web (HTTP) and websecure (HTTPS)
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Redirect all HTTP traffic to HTTPS
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      # Configure Let's Encrypt for automatic SSL certificates
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      # Volume to store Let's Encrypt certificates
+      - ./letsencrypt:/letsencrypt
+    networks:
+      - niche-explorer-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`localhost`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.dashboard.service=api@internal"
+
+  # Client (React + Vite)
+  client:
+    build:
+      context: ../../
+      dockerfile: web-client/Dockerfile
+    networks:
+      - niche-explorer-network
+    depends_on:
+      - api-server
+    labels:
+      - "traefik.enable=true"
+      # Route traffic for your domain to the client service
+      - "traefik.http.routers.client.rule=Host(`${DOMAIN}`)"
+      # Use the 'letsencrypt' resolver for this router
+      - "traefik.http.routers.client.tls.certresolver=letsencrypt"
+      - "traefik.http.services.client.loadbalancer.server.port=80"
+
+  # Spring Boot API server
+  api-server:
+    build:
+      context: ../../
+      dockerfile: services/spring-api/Dockerfile
+    networks:
+      - niche-explorer-network
+    depends_on:
+      - genai
+      - topic-discovery
+      - article-fetcher
+      - db
+    environment:
+      - GENAI_BASE_URL=http://genai:8000
+      - FETCHER_BASE_URL=http://article-fetcher:8200
+      - TOPIC_BASE_URL=http://topic-discovery:8100
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    labels:
+      - "traefik.enable=true"
+      # Route API traffic to the api-server. The PathPrefix is the only rule needed.
+      - "traefik.http.routers.api-server.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.api-server.priority=100"
+      - "traefik.http.routers.api-server.tls.certresolver=letsencrypt"
+      # The stripprefix middleware is removed.
+      - "traefik.http.routers.api-server.middlewares=cors-headers"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolalloworiginlist=https://${DOMAIN}"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.cors-headers.headers.accesscontrolallowheaders=*"
+      - "traefik.http.services.api-server.loadbalancer.server.port=8080"
+
+  # GenAI service (FastAPI + Gemini)
+  genai:
+    build:
+      context: ../../services/py-genai
+      dockerfile: Dockerfile
+    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--timeout-keep-alive", "60"]
+    networks:
+      - niche-explorer-network
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - CHAIR_API_KEY=${CHAIR_API_KEY}
+
+  # Postgres with pgvector extension
+  db:
+    image: ankane/pgvector:latest
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - niche-explorer-network
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+  # Topic Discovery microservice
+  topic-discovery:
+    build:
+      context: ../../services/py-topics
+      dockerfile: Dockerfile
+    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8100", "--timeout-keep-alive", "60"]
+    depends_on:
+      - genai
+    networks:
+      - niche-explorer-network
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+
+  # Article Fetcher microservice
+  article-fetcher:
+    build:
+      context: ../../services/py-fetcher
+      dockerfile: Dockerfile
+    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8200", "--timeout-keep-alive", "60"]
+    networks:
+      - niche-explorer-network
+
+networks:
+  niche-explorer-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local

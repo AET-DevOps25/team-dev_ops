@@ -29,8 +29,9 @@ services:
       - GENAI_BASE_URL=http://genai:8000
       - FETCHER_BASE_URL=http://article-fetcher:8200
       - TOPIC_BASE_URL=http://topic-discovery:8100
-    env_file:
-      - ../.env
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
   # GenAI service (FastAPI + Gemini)
   genai:
@@ -42,8 +43,9 @@ services:
       - "8000:8000"
     networks:
       - niche-explorer-network
-    env_file:
-      - ../.env
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - CHAIR_API_KEY=${CHAIR_API_KEY}
 
   # Postgres with pgvector extension
   db:
@@ -54,8 +56,10 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - niche-explorer-network
-    env_file:
-      - ../.env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
   # Topic Discovery microservice
   topic-discovery:
@@ -69,6 +73,8 @@ services:
       - "8100:8100"
     networks:
       - niche-explorer-network
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
 
   # Article Fetcher microservice
   article-fetcher:

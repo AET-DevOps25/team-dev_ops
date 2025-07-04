@@ -62,7 +62,49 @@ jobs:
         working-directory: ${{ matrix.service.path }}
         run: |
           case ${{ matrix.service.name }} in
-            spring-api) chmod +x gradlew && ./gradlew test ;;
-            py-genai|py-topics|py-fetcher) pip install -r requirements.txt && pytest || true ;;
-            web-client) npm ci && npm run test -- --watchAll=false || true ;;
+            spring-api)
+              chmod +x gradlew && ./gradlew test
+              ;;
+            py-fetcher)
+              pip install -r requirements.txt -r test_requirements.txt
+              # The contract test is run in the dedicated 'contract-test' job.
+              ;;
+            py-genai|py-topics)
+              pip install -r requirements.txt
+              # Still need to add tests
+              ;;
+            web-client)
+              rm -rf node_modules package-lock.json
+              npm install
+              npm run build
+              # Still need to add tests
+              ;;
           esac
+
+  contract-test:
+    needs: generate-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+      
+      - name: Install OpenAPI Generator CLI
+        run: npm install -g @openapitools/openapi-generator-cli@latest
+      
+      - name: Generate code
+        run: bash ./api/scripts/gen-all.sh
+        shell: bash
+      
+      - name: Run Pact contract tests
+        run: bash ./api/scripts/run-pact.sh
