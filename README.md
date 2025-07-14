@@ -276,7 +276,26 @@ The application should now be deployed and accessible at the public IP address o
 In rare cases, the AWS public IP address changes seemingly at random. Hence, if the above fails with an SSH error, consider updating the IP address.
 
 
-#### GH-Action AWS Deployment
+### GitHub Actions AWS Deployment
+
+The repository is equipped with a `Deploy to AWS EC2` GitHub Actions workflow (`deploy_to_aws.yml`) . For this, specific credentials must be securely stored as GitHub Secrets in the repository (`Settings > Secrets and variables > Actions`).
+
+#### Required GitHub Secrets
+
+The following secrets are required:
+
+| Secret Name             | Description                                                                                                     |
+| :---------------------- | :---------------------------------------------------------------------------------------------------------------|
+| `AWS_ACCESS_KEY_ID`     | The access key ID for the AWS account - Contained in the AWS CLI credentials.                                   |
+| `AWS_SECRET_ACCESS_KEY` | The secret access key corresponding to the access key ID - Contained in the AWS CLI credentials.                |
+| `AWS_SESSION_TOKEN`     | The session token for the AWS credentials - Contained in the AWS CLI credentials.                               |
+| `AWS_SSH_PRIVATE_KEY`   | The full content of the `.pem` private key file (e.g., `labsuser.pem`) .                                        |
+
+#### Running the Workflow
+
+The workflow is designed to be triggered manually from the **Actions** tab in the GitHub repository.
+
+When initiated, it will prompt for the **Public IPv4 address** and the **Instance ID** of the target EC2 instance. After these details are provided, the action will automatically connect to the instance and deploy the application, mirroring the steps of the manual Ansible deployment.
 
 
 ### Database Schema
