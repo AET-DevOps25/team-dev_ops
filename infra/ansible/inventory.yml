@@ -1,0 +1,6 @@
+all:
+  hosts:
+    ec2_instance:
+      ansible_host: <ip_address>  # Replace with the actual IP address of the EC2 instance
+      ansible_user: ubuntu
+      ansible_ssh_private_key_file: ./labsuser.pem  # Relative to ansible/ directory

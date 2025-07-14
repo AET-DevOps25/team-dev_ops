@@ -1,63 +1,88 @@
-name: Deploy_to_aws
+# .github/workflows/deploy-aws.yml
+
+name: Deploy to AWS EC2
 
 on:
   workflow_dispatch:
+    inputs:
+      instance_id:
+        description: 'The AWS EC2 Instance ID (e.g., i-0123456789abcdef)'
+        required: true
+      public_ip:
+        description: 'The current public IPv4 of the EC2 instance'
+        required: true
 
 jobs:
   deploy:
+    name: Deploy to AWS
     runs-on: ubuntu-latest
-    environment: aws
-    timeout-minutes: 15
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      AWS_DEFAULT_REGION: us-east-1
-
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-    - name: Debug AWS Credentials # Add this step
-      run: |
-        echo "AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION"
-        if [ -n "$AWS_ACCESS_KEY_ID" ]; then echo "AWS_ACCESS_KEY_ID is set"; else echo "AWS_ACCESS_KEY_ID is NOT set"; fi
-        # Use a less revealing check for the secret key itself in logs
-        if [ -n "$AWS_SECRET_ACCESS_KEY" ]; then echo "AWS_SECRET_ACCESS_KEY is partially set (checking length > 0)"; else echo "AWS_SECRET_ACCESS_KEY is NOT set"; fi
-        if [ -n "$AWS_SESSION_TOKEN" ]; then echo "AWS_SESSION_TOKEN is set"; else echo "AWS_SESSION_TOKEN is NOT set (this is OK if using IAM User creds)"; fi
-    - name: Terraform Init
-      run: |
-        cd terraform
-        terraform init
+      # Configure AWS credentials using GitHub Secrets
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
 
-    - name: Terraform Apply
-      run: |
-        cd terraform
-        terraform apply -auto-approve | tee tf.log
-        IP=$(terraform output -raw instance_ip)
-        echo "EC2_IP=$IP" >> $GITHUB_ENV
+      # Terraform
 
-    - name: Install Ansible
-      run: |
-        sudo apt update
-        sudo apt install -y ansible
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
-    - name: Setup SSH Key
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
 
-    - name: Wait for EC2 SSH
-      run: |
-        for i in {1..20}; do
-          echo "Waiting for EC2 to become reachable (try $i)..."
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@$EC2_IP "echo connected" && break
-          sleep 10
-        done
+      # Run Terraform (Not necessarily needed with this infrastructure, but included for completeness)
+      - name: Terraform Init & Apply
+        id: terraform
+        working-directory: infra/terraform
+        run: |
+          terraform init
+          terraform apply -auto-approve \
+            -var="instance_id=${{ github.event.inputs.instance_id }}" \
+            -var="ssh_source_ip=${{ github.event.inputs.public_ip }}"
 
-    - name: Run Ansible Playbook
-      run: |
-        ansible-playbook ansible/playbook.yml -i "$EC2_IP," -u ec2-user --private-key ~/.ssh/id_rsa
+      # Ansible:
+
+      # Create the .env file using GitHub Secrets and inputs
+      - name: Create .env file
+        run: |
+          cat <<EOF > .env
+          CHAIR_API_KEY=${{ secrets.CHAIR_API_KEY }}
+          GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          DOMAIN=${{ github.event.inputs.public_ip }}
+          EOF
+          echo ".env file created successfully."
+
+      # Create the SSH private key file for Ansible
+      - name: Set up SSH private key for Ansible
+        working-directory: infra/ansible
+        run: |
+          echo "${{ secrets.AWS_SSH_PRIVATE_KEY }}" > labsuser.pem
+          chmod 400 labsuser.pem
+          echo "SSH key file created and permissions set."
+
+      # Update the Ansible inventory file with the public IPv4 address of the AWS EC2 instance
+      - name: Update Ansible inventory
+        working-directory: infra/ansible
+        run: |
+          sed -i 's/ansible_host: .*/ansible_host: ${{ github.event.inputs.public_ip }}/' inventory.yml
+          echo "Ansible inventory updated with host IP: ${{ github.event.inputs.public_ip }}"
+
+      # Run the Ansible playbook to deploy the application
+      - name: Run Ansible Playbook
+        working-directory: infra/ansible
+        run: >-
+          ansible-playbook playbook.yml 
+          --extra-vars "ghcr_username=${{ github.actor }} ghcr_token=${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Deployment Complete
+        run: |
+          echo "Deployment successful!"
+          echo "Application should be accessible at: http://${{ github.event.inputs.public_ip }}"

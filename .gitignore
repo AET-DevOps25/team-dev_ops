@@ -429,3 +429,15 @@ chroma_db/
 services/*/chroma_db/
 *.sqlite3
 *.bin
+
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.*
+# *.tfvars # Deliberately "exposing" this file because the content is not sensible and the ip is invalid after a while anyways
+
+
+# Ansible
+*.pem

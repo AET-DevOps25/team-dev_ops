@@ -1,0 +1,142 @@
+- name: Deploy Niche Explorer Application
+  hosts: ec2_instance
+  become: yes
+
+  tasks:
+    # Install Docker and Dependencies
+    - name: Update apt package index and install prerequisites
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+        update_cache: true
+        state: present
+
+    - name: Create directory for Docker's GPG key
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Add Docker's official GPG key
+      ansible.builtin.shell:
+        cmd: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        creates: /etc/apt/keyrings/docker.gpg
+
+    - name: Set up the Docker repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+        filename: docker
+
+    - name: Update apt index again and install Docker Engine and Compose Plugin
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        update_cache: true
+        state: present
+
+    - name: Ensure Docker service is running and enabled on boot
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add the 'ubuntu' user to the 'docker' group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+      # Reset SSH connection to apply group change
+    - name: Reset SSH connection to apply group changes
+      ansible.builtin.meta: reset_connection
+
+    - name: Ensure Docker Python SDK is installed via apt
+      ansible.builtin.apt:
+        name: python3-docker
+        state: present
+
+    # Configure the Application on the Server
+    - name: Create application directory on the server
+      file:
+        path: /opt/niche-explorer
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Copy base Docker Compose file to server
+      copy:
+        src: ../docker-compose.yml
+        dest: /opt/niche-explorer/docker-compose.yml
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+
+    - name: Copy AWS override Docker Compose file to server
+      copy:
+        src: ../compose.aws.yml
+        dest: /opt/niche-explorer/compose.aws.yml
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+
+    - name: Copy .env file from project root to server
+      copy:
+        src: ../../.env
+        dest: /opt/niche-explorer/.env
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+
+    - name: Copy Traefik configuration to server
+      copy:
+        src: ../traefik/
+        dest: /opt/niche-explorer/traefik/
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: Copy Prometheus configuration to server
+      copy:
+        src: ../prometheus/
+        dest: /opt/niche-explorer/prometheus/
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: Copy Grafana configuration to server
+      copy:
+        src: ../grafana/
+        dest: /opt/niche-explorer/grafana/
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: Ensure letsencrypt directory exists on server<
+      file:
+        path: /opt/niche-explorer/letsencrypt
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    # Deploy the Application with Docker Compose
+    - name: Log in to GitHub Container Registry (GHCR)
+      community.docker.docker_login:
+        registry_url: ghcr.io
+        username: "{{ ghcr_username }}"
+        password: "{{ ghcr_token }}"
+      become_user: "{{ ansible_user }}"
+
+    - name: Deploy application stack using docker compose command
+      ansible.builtin.command:
+        cmd: docker compose -f docker-compose.yml -f compose.aws.yml up -d --no-build --pull always --remove-orphans
+      args:
+        chdir: /opt/niche-explorer
+      become_user: "{{ ansible_user }}"
+      async: 1200  # Set a total timeout of 20 minutes
+      poll: 30     # Check the status every 15 seconds

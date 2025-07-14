@@ -1,103 +1,24 @@
-services:
-  reverse-proxy:
-    image: traefik:v3.4
-    command:
-      - "--providers.docker=true"
-      - "--providers.docker.exposedByDefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.letsencrypt.acme.email=admin@tum.de"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./letsencrypt:/letsencrypt
+# compose.aws.yml (Production Override)
+# This file overrides the base docker-compose.yml for AWS deployment.
+# It switches services from using local builds to pulling pre-built images from GHCR.
 
-  # Client service - UI
+services:
   client:
     image: ghcr.io/aet-devops25/team-dev_ops/client:latest
-    environment:
-      - PUBLIC_API_URL=${PUBLIC_API_URL}
-    depends_on:
-      - monitoring
-      - report-generator
-      - rss-fetcher
-      - genai
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.client.rule=Host(`${CLIENT_HOST}`)"
-      - "traefik.http.services.client.loadbalancer.server.port=80"
-      - "traefik.http.routers.client.entrypoints=websecure"
-      - "traefik.http.routers.client.tls.certresolver=letsencrypt"
-      - "traefik.http.middlewares.client-compress.compress=true"
-      - "traefik.http.routers.client.middlewares=client-compress"
-      - "traefik.http.routers.client.priority=1"
+    build: null # Explicitly disable the build
 
-  # Server services
-  monitoring:
-    image: ghcr.io/aet-devops25/team-dev_ops/monitoring:latest
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.monitoring.rule=Host(`${SERVER_HOST}`) && PathPrefix(`/api/monitoring`)"
-      - "traefik.http.services.monitoring.loadbalancer.server.port=8080"
-      - "traefik.http.routers.monitoring.entrypoints=websecure"
-      - "traefik.http.routers.monitoring.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.monitoring.priority=10"
-
-  report-generator:
-    image: ghcr.io/aet-devops25/team-dev_ops/report-generator:latest
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.report-generator.rule=Host(`${SERVER_HOST}`) && PathPrefix(`/api/report-gen`)"
-      - "traefik.http.services.report-generator.loadbalancer.server.port=8081"
-      - "traefik.http.routers.report-generator.entrypoints=websecure"
-      - "traefik.http.routers.report-generator.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.report-generator.priority=10"
-
-  rss-fetcher:
-    image: ghcr.io/aet-devops25/team-dev_ops/rss-fetcher:latest
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.rss-fetcher.rule=Host(`${SERVER_HOST}`) && PathPrefix(`/api/rss-fetcher`)"
-      - "traefik.http.services.rss-fetcher.loadbalancer.server.port=8082"
-      - "traefik.http.routers.rss-fetcher.entrypoints=websecure"
-      - "traefik.http.routers.rss-fetcher.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.rss-fetcher.priority=10"
+  api-server:
+    image: ghcr.io/aet-devops25/team-dev_ops/api-server:latest
+    build: null # Explicitly disable the build
 
   genai:
     image: ghcr.io/aet-devops25/team-dev_ops/genai:latest
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.genai.rule=Host(`${SERVER_HOST}`) && PathPrefix(`/api/genai`)"
-      - "traefik.http.services.genai.loadbalancer.server.port=8083"
-      - "traefik.http.routers.genai.entrypoints=websecure"
-      - "traefik.http.routers.genai.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.genai.priority=10"
+    build: null # Explicitly disable the build
 
-  # Fallback API router for any unmatched /api requests
-  api-fallback:
-    image: ghcr.io/aet-devops25/team-dev_ops/monitoring:latest
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api-fallback.rule=Host(`${SERVER_HOST}`) && PathPrefix(`/api`)"
-      - "traefik.http.services.api-fallback.loadbalancer.server.port=8081"
-      - "traefik.http.routers.api-fallback.entrypoints=websecure"
-      - "traefik.http.routers.api-fallback.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.api-fallback.priority=1"
+  topic-discovery:
+    image: ghcr.io/aet-devops25/team-dev_ops/topic-discovery:latest
+    build: null # Explicitly disable the build
 
-networks:
-  default:
-    name: niche-explorer-network
+  article-fetcher:
+    image: ghcr.io/aet-devops25/team-dev_ops/article-fetcher:latest
+    build: null # Explicitly disable the build
