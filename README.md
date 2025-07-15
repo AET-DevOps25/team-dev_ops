@@ -238,7 +238,7 @@ Manually create EC2 Instance:
 
 This installs Docker, logs in to the container registry, and starts the application.
 
-0. Update the `DOMAIN` variable in .env to the obtained public IP.
+0. Update the `DOMAIN` variable in .env to the obtained public IP and append `.nip.io`. This allows to use tls, but also to route to prometheus and grafana
 
 1.  Place the private key file (`labsuser.pem`, obtained earlier) into `~/.ssh/`.
 
