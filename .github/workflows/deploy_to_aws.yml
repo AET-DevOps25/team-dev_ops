@@ -11,6 +11,9 @@ on:
       public_ip:
         description: 'The current public IPv4 of the EC2 instance'
         required: true
+      ACME_EMAIL:
+        description: 'Email for ACME (e.g., letsencrypt) notifications'
+        required: true
 
 jobs:
   deploy:
@@ -56,7 +59,8 @@ jobs:
           POSTGRES_USER=${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-          DOMAIN=${{ github.event.inputs.public_ip }}
+          DOMAIN=${{ github.event.inputs.public_ip }}.nip.io
+          ACME_EMAIL=${{ github.event.inputs.ACME_EMAIL }}
           EOF
           echo ".env file created successfully."
 
@@ -85,4 +89,4 @@ jobs:
       - name: Deployment Complete
         run: |
           echo "Deployment successful!"
-          echo "Application should be accessible at: http://${{ github.event.inputs.public_ip }}"
+          echo "Application should be accessible at: https://${{ github.event.inputs.public_ip }}.nip.io"
