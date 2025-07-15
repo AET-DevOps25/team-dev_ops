@@ -178,6 +178,7 @@ Before beginning, ensure the following are installed and configured:
 
 *   **[Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)**
 *   **[Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)**
+    **[Alternative apt Ansible install](https://spacelift.io/blog/how-to-install-ansible)**
 *   **[AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)**
 *   An **AWS account** with permissions to create EC2 instances and related resources.
 *   A **GitHub Personal Access Token (PAT)** with `read:packages` scope to pull images from the GitHub Container Registry (ghcr.io).
@@ -190,7 +191,7 @@ Manually create EC2 Instance:
 3.  Configure the new instance with the following settings:
     *   **Name:** Choose a descriptive name (e.g., `my-app-server`).
     *   **Application and OS Images (AMI):** Select **Ubuntu**.
-    *   **Instance type*** Use an instance with at least 8 GiB RAM, like `t3.large`
+    *   **Instance type** Use an instance with at least 8 GiB RAM, like `t3.large`
     *   **Key pair (login):** Choose `vockey`as key pair. The corresponding `.pem` file will be needed later.
     *   **Network settings:** Ensure **HTTPS** and **HTTP** are enabled.
     *   **Configure storage:** Increase the root volume size to at least **25 GiB**.
@@ -239,18 +240,25 @@ This installs Docker, logs in to the container registry, and starts the applicat
 
 0. Update the `DOMAIN` variable in .env to the obtained public IP.
 
-1.  Navigate to the Ansible directory:
+1.  Place the private key file (`labsuser.pem`, obtained earlier) into `~/.ssh/`.
+
+    1.1. If the directory does not exist, create it first 
+    ```sh
+    mkdir ~/.ssh
+
+    chmod 700 ~/.ssh
+    ```
+
+2.  Set the correct permissions for the private key file.
+    ```sh
+    chmod 400 ~/.ssh/labsuser.pem
+    ```
+
+3.  Navigate to the Ansible directory:
     ```sh
     cd infra/ansible/  # From project root folder
 
     cd ../ansible      # From the terraform folder
-    ```
-
-2.  Place the private key file (`labsuser.pem`, obtained earlier) into this directory.
-
-3.  Set the correct permissions for the private key file.
-    ```sh
-    chmod 400 labsuser.pem
     ```
 
 4.  Open the `inventory.yml` file and update the `ansible_host` with the instance's public IP address.
