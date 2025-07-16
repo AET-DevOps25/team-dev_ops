@@ -317,26 +317,29 @@ The Prometheus UI can be accessed at `prometheus.${DOMAIN}`. No authentication i
 #### Prometheus Metrics
 Prometheus collects the following metrics, which are defined via `infra/prometheus/metrics.rules.yml`
 
-| Metric Name                               | Description                                      | Recording Interval |
-| :---------------------------------------- | :----------------------------------------------- | :----------------- |
-| `job:http_requests_total`                 | Total HTTP request count per job                 | 1m                 |
-| `job:http_requests_total:rate5m`          | 5-minute average HTTP request rate per job       | 1m                 |
-| `job:http_requests_error:rate5m`          | 5-minute HTTP error (4xx/5xx) rate per job       | 1m                 |
-| `job:http_requests_errors`                | Total HTTP error (4xx/5xx) count per job         | 1m                 |
-| `job:http_request_duration_seconds:avg5m` | 5-minute average HTTP request duration per job   | 1m                 |
+| Metric Name                               | Description                                                                 | Recording Interval |
+| :---------------------------------------- | :-------------------------------------------------------------------------- | :----------------- |
+| `job:http_requests_total`                 | Total count of filtered HTTP API requests per job                           | 1m                 |
+| `job:http_requests_total:rate5m`          | 5-minute average rate of filtered HTTP API requests per job                 | 1m                 |
+| `job:http_requests_error:rate5m`          | 5-minute HTTP error (4xx/5xx) rate (ratio) of filtered API requests per job | 1m                 |
+| `job:http_requests_errors`                | Total count of HTTP errors (4xx/5xx) from filtered API requests per job     | 1m                 |
+| `job:http_request_duration_seconds:avg1m` | 1-minute average HTTP request duration of filtered API calls per job        | 1m                 |
 
 #### Prometheus Alerts
 Prometheus continuously evaluates a set of alerting rules, defined in `infra/prometheus/alert.rules.yml`.  When the conditions for an alert are met, Prometheus will fire the alert.
 
-| Alert Name                          | Service         | Severity   | Trigger Condition (Simplified)                                     |
-| :---------------------------------- | :-------------- | :--------- | :----------------------------------------------------------------- |
-| **ServiceDown**                     | General         | `critical` | Service `up` metric is 0 for 1 minute (service is down).           |
-| **HighRequestRateGenAI**            | `genai`         | `warning`  | Request rate > 4 RPM for 1 minute (approaching 5 RPM limit).       |
-| **HighTotalRequestsGenAI**          | `genai`         | `warning`  | Total requests > 50 in 10 minutes for 1 minute.                    |
-| **HighDailyRequestsGenAI**          | `genai`         | `critical` | Total requests > 90 in 1 day for 1 minute (near 100 RPD limit).    |
-| **HighRequestRateArticleFetcher**   | `article-fetcher` | `warning`  | Request rate > 16 RPM for 1 minute (approaching 20 RPM limit).     |
-| **HighTotalRequestsArticleFetcher** | `article-fetcher` | `warning`  | Total requests > 150 in 10 minutes for 1 minute.                   |
-| **HighDailyRequestsArticleFetcher** | `article-fetcher` | `critical` | Total requests > 2000 in 1 day for 1 minute.                       |
+| Alert Name                                   | Service           | Severity   | Summary of Trigger Condition                                                     |
+| :------------------------------------------- | :---------------- | :--------- | :------------------------------------------------------------------------------- |
+| **ServiceDown**                              | General           | `critical` | Service `up` metric is 0 for 1 minute (service is down).                         |
+| **HighRequestRateGenAI_Classify**            | `genai`           | `warning`  | Request rate to `/api/v1/classify` endpoint > 4 RPM for 1 minute.                |
+| **HighTotalRequestsGenAI_Classify**          | `genai`           | `warning`  | Total requests to `/api/v1/classify` endpoint > 50 in 10 minutes for 1 minute.   |
+| **HighDailyRequestsGenAI_Classify**          | `genai`           | `critical` | Total requests to `/api/v1/classify` endpoint > 90 in 1 day for 1 minute.        |
+| **HighRequestRateGenAI_Embedding**           | `genai`           | `warning`  | Request rate to `/api/v1/embeddings` endpoint > 4 RPM for 1 minute.              |
+| **HighTotalRequestsGenAI_Embedding**         | `genai`           | `warning`  | Total requests to `/api/v1/embeddings` endpoint > 50 in 10 minutes for 1 minute. |
+| **HighDailyRequestsGenAI_Embedding**         | `genai`           | `critical` | Total requests to `/api/v1/embeddings` endpoint > 90 in 1 day for 1 minute.      |
+| **HighRequestRateArticleFetcher_Articles**   | `article-fetcher` | `warning`  | Request rate to `/api/v1/articles` endpoint > 16 RPM for 1 minute.               |
+| **HighTotalRequestsArticleFetcher_Articles** | `article-fetcher` | `warning`  | Total requests to `/api/v1/articles` endpoint > 150 in 10 minutes for 1 minute.  |
+| **HighDailyRequestsArticleFetcher_Articles** | `article-fetcher` | `critical` | Total requests to `/api/v1/articles` endpoint > 2000 in 1 day for 1 minute.      |
 
 
 ### Grafana
