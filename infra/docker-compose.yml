@@ -28,6 +28,10 @@ services:
       - "traefik.http.routers.redirect-to-https.middlewares=redirect-https"
       - "traefik.http.middlewares.redirect-https.redirectscheme.scheme=https"
 
+      - "--metrics.prometheus=true"                             # Enables the /metrics endpoint
+      - "--metrics.prometheus.addServicesLabels=true"           # CRITICAL: Adds the 'service' label to metrics
+      - "--metrics.prometheus.entryPoint=traefik"   
+
   # Client (React + Vite)
   client:
     build:

@@ -4,56 +4,22 @@ groups:
   interval: 1m
   rules:
 
-  # Request Count
-  - record: job:http_requests:rate5m
-    expr: |
-      sum by (job, instance) (
-        rate(http_server_requests_seconds_count[5m])
-          or
-        rate(traefik_service_requests_total[5m])
-          or
-        rate(prometheus_http_requests_total{handler!~"/api/v1/targets.*"}[5m])
-      )
+  # Request Count (total)
+  - record: job:http_requests_total
+    expr: sum(http_requests_total) by (job)
+
+  # Request Rate (total over 5 minutes)
+  - record: job:http_requests_total:rate5m
+    expr: sum(rate(http_requests_total[5m])) by (job)
 
   # Error Rate (as a ratio)
-  - record: job:http_requests_errors_5xx:ratio5m
-    expr: |
-      (
-        sum by (job, instance) (
-          rate(http_server_requests_seconds_count{code=~"5.."}[5m])
-            or
-          rate(traefik_service_requests_total{code=~"5.."}[5m])
-            or
-          rate(prometheus_http_requests_total{code=~"5.."}[5m])
-        )
-        or on(job, instance) (0 * job:http_requests:rate5m)
-      )
-      /
-      (
-        job:http_requests:rate5m > 0
-      )
+  - record: job:http_requests_error:rate5m
+    expr: sum(rate(http_requests_total{status=~"4..|5.."}[5m])) by (job) / sum(rate(http_requests_total[5m])) by (job) or vector(0)
 
-  # Request Latency (95th percentile)
-  - record: job:http_requests_latency_seconds:p95_5m
-    expr: |
-      histogram_quantile(0.95,
-        sum by (le, job, instance) (
-          rate(http_server_requests_seconds_bucket[5m])
-            or
-          rate(traefik_service_requests_duration_seconds_bucket[5m])
-            or
-          rate(prometheus_http_request_duration_seconds_bucket[5m])
-        )
-      )
+    # Errors
+  - record: job:http_requests_errors
+    expr: sum(http_requests_total{status=~"4..|5.."}) by (job) or vector(0)
 
-  # 4. CPU usage as a ratio of the defined limit.
-  - record: job:container_cpu_usage:ratio
-    expr: |
-      sum by (job, instance) (rate(container_cpu_usage_seconds_total{container!=""}[5m]))
-      /
-      sum by (job, instance) (container_spec_cpu_quota / container_spec_cpu_period)
-
-  # Memory usage as a ratio of the defined limit.
-  - record: job:container_memory_usage
-    expr: |
-      sum by (job, instance) (container_memory_usage_bytes{container!=""})
+  # Latency (average over 5 minutes)
+  - record: job:http_request_duration_seconds:avg5m
+    expr: sum(rate(http_request_duration_seconds_sum[5m])) by (job) / sum(rate(http_request_duration_seconds_count[5m])) by (job)

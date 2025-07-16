@@ -11,4 +11,4 @@ google-generativeai
 python-dotenv
 httpx
 numpy<2.0
-starlette-prometheus
+prometheus_fastapi_instrumentator

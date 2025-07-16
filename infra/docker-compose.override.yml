@@ -20,6 +20,10 @@ services:
       # Explicitly exclude the redirect-to-https router for local development
       - "traefik.http.routers.redirect-to-https.tls=false"
       - "traefik.http.routers.redirect-to-https.priority=0" # Lower priority to effectively disable it
+      
+      - "--metrics.prometheus=true"                             # Enables the /metrics endpoint
+      - "--metrics.prometheus.addServicesLabels=true"           # CRITICAL: Adds the 'service' label to metrics
+      - "--metrics.prometheus.entryPoint=traefik"   
 
   client:
     labels:
