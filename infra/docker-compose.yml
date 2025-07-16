@@ -4,7 +4,6 @@ services:
     image: traefik:v3.0
     command:
       - "--configfile=/etc/traefik/traefik.yml"
-
       - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
     environment:
       - ACME_EMAIL=${ACME_EMAIL}
@@ -15,7 +14,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-      # Volume to store Let's Encrypt certificates
       - ./letsencrypt:/letsencrypt
     networks:
       - niche-explorer-network
@@ -23,6 +21,12 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`localhost`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
       - "traefik.http.routers.dashboard.service=api@internal"
+      # Add middleware for HTTP-to-HTTPS redirection
+      - "traefik.http.routers.redirect-to-https.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.routers.redirect-to-https.priority=1"
+      - "traefik.http.routers.redirect-to-https.entrypoints=web"
+      - "traefik.http.routers.redirect-to-https.middlewares=redirect-https"
+      - "traefik.http.middlewares.redirect-https.redirectscheme.scheme=https"
 
   # Client (React + Vite)
   client:
