@@ -4,4 +4,4 @@ pydantic
 arxiv
 feedparser
 requests
-starlette-prometheus
+prometheus_fastapi_instrumentator

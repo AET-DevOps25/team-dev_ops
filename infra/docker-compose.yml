@@ -3,19 +3,10 @@ services:
   traefik:
     image: traefik:v3.0
     command:
-      # --- Production Configuration ---
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      # Define entrypoints for web (HTTP) and websecure (HTTPS)
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      # Redirect all HTTP traffic to HTTPS
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      # Configure Let's Encrypt for automatic SSL certificates
-      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--configfile=/etc/traefik/traefik.yml"
       - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    environment:
+      - ACME_EMAIL=${ACME_EMAIL}
     ports:
       - "80:80"
       - "443:443"
@@ -23,7 +14,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-      # Volume to store Let's Encrypt certificates
       - ./letsencrypt:/letsencrypt
     networks:
       - niche-explorer-network
@@ -31,6 +21,16 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`localhost`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
       - "traefik.http.routers.dashboard.service=api@internal"
+      # Add middleware for HTTP-to-HTTPS redirection
+      - "traefik.http.routers.redirect-to-https.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.routers.redirect-to-https.priority=1"
+      - "traefik.http.routers.redirect-to-https.entrypoints=web"
+      - "traefik.http.routers.redirect-to-https.middlewares=redirect-https"
+      - "traefik.http.middlewares.redirect-https.redirectscheme.scheme=https"
+
+      - "--metrics.prometheus=true"                             # Enables the /metrics endpoint
+      - "--metrics.prometheus.addServicesLabels=true"           # CRITICAL: Adds the 'service' label to metrics
+      - "--metrics.prometheus.entryPoint=traefik"   
 
   # Client (React + Vite)
   client:
@@ -158,7 +158,6 @@ services:
       - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN}`)"
       - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-      - "traefik.http.routers.prometheus.middlewares=prometheus-auth"
     restart: unless-stopped
 
   grafana:

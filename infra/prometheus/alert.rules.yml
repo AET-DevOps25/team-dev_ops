@@ -1,0 +1,76 @@
+# /etc/prometheus/rules/service_rules.yml
+groups:
+
+- name: service-alerts
+  rules:
+  - alert: ServiceDown
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Service '{{ $labels.job }}' is down"
+      description: "The service '{{ $labels.job }}' at instance '{{ $labels.instance }}' has been down for more than 1 minute."
+
+- name: genai_alerts
+  rules:
+  - alert: HighRequestRateGenAI
+    expr: sum(rate(http_requests_total{job="genai"}[1m])) > 4
+    for: 1m
+    labels:
+      severity: warning
+      service: genai
+    annotations:
+      summary: "High request rate detected on genai server"
+      description: "The request rate to the genai server ({{ $value }} requests per minute) is approaching the Gemini free tier limit of 5 RPM."
+
+  - alert: HighTotalRequestsGenAI
+    expr: sum(increase(http_requests_total{job="genai"}[10m])) > 50
+    for: 1m
+    labels:
+      severity: warning
+      service: genai
+    annotations:
+      summary: "High total request count detected on genai server"
+      description: "The total number of requests to the genai server ({{ $value }} requests) has exceeded 50 in the last 10 minutes, approaching the Gemini free tier daily limit of 100 RPD."
+
+  - alert: HighDailyRequestsGenAI
+    expr: sum(increase(http_requests_total{job="genai"}[1d])) > 90
+    for: 1m
+    labels:
+      severity: critical
+      service: genai
+    annotations:
+      summary: "High daily request count detected on genai server"
+      description: "The total number of requests to the genai server today ({{ $value }} requests) has exceeded 90, nearing the Gemini 2.5 Pro free tier limit of 100 RPD."
+
+- name: article_fetcher_alerts
+  rules:
+  - alert: HighRequestRateArticleFetcher
+    expr: sum(rate(http_requests_total{job="article-fetcher"}[1m])) > 16
+    for: 1m
+    labels:
+      severity: warning
+      service: article-fetcher
+    annotations:
+      summary: "High request rate detected on article-fetcher server"
+      description: "The request rate to the article-fetcher server ({{ $value }} requests per minute) is approaching the arXiv RSS feed limit of ~20 RPM."
+  - alert: HighTotalRequestsArticleFetcher
+    expr: sum(increase(http_requests_total{job="article-fetcher"}[10m])) > 150
+    for: 1m
+    labels:
+      severity: warning
+      service: article-fetcher
+    annotations:
+      summary: "High total request count detected on article-fetcher server"
+      description: "The total number of requests to the article-fetcher server ({{ $value }} requests) has exceeded 150 in the last 10 minutes."
+
+  - alert: HighDailyRequestsArticleFetcher
+    expr: sum(increase(http_requests_total{job="article-fetcher"}[1d])) > 2000
+    for: 1m
+    labels:
+      severity: critical
+      service: article-fetcher
+    annotations:
+      summary: "High daily request count detected on article-fetcher server"
+      description: "The total number of requests to the article-fetcher server today ({{ $value  }} requests) has exceeded 2000."

@@ -4,7 +4,8 @@ from fastapi.exceptions import RequestValidationError
 from niche_explorer_models.models.article_fetch_request import ArticleFetchRequest
 from niche_explorer_models.models.article_fetch_response import ArticleFetchResponse
 from typing import Dict, List
-from starlette_prometheus import metrics, PrometheusMiddleware
+
+from prometheus_fastapi_instrumentator import Instrumentator
 
 import logging
 from .services.arxiv_service import arxiv_fetcher
@@ -22,8 +23,8 @@ app = FastAPI(
     description="Fetches articles from arXiv and Reddit based on queries",
 )
 
-app.add_middleware(PrometheusMiddleware)
-app.add_route("/metrics", metrics)
+# Prometheus middleware for metrics
+Instrumentator().instrument(app).expose(app)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(

@@ -1,0 +1,25 @@
+# /etc/prometheus/rules/service_rules.yml
+groups:
+- name: service_level_indicators
+  interval: 1m
+  rules:
+
+  # Request Count (total)
+  - record: job:http_requests_total
+    expr: sum(http_requests_total) by (job)
+
+  # Request Rate (total over 5 minutes)
+  - record: job:http_requests_total:rate5m
+    expr: sum(rate(http_requests_total[5m])) by (job)
+
+  # Error Rate (as a ratio)
+  - record: job:http_requests_error:rate5m
+    expr: sum(rate(http_requests_total{status=~"4..|5.."}[5m])) by (job) / sum(rate(http_requests_total[5m])) by (job) or vector(0)
+
+    # Errors
+  - record: job:http_requests_errors
+    expr: sum(http_requests_total{status=~"4..|5.."}) by (job) or vector(0)
+
+  # Latency (average over 5 minutes)
+  - record: job:http_request_duration_seconds:avg5m
+    expr: sum(rate(http_request_duration_seconds_sum[5m])) by (job) / sum(rate(http_request_duration_seconds_count[5m])) by (job)

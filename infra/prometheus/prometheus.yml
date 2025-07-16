@@ -28,4 +28,5 @@ scrape_configs:
     static_configs:
       - targets: ['article-fetcher:8200']
 rule_files:
-  - "traefik_rules.yml"
+  - "alert.rules.yml"
+  - "metrics.rules.yml"

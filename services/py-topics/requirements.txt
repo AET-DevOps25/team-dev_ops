@@ -12,4 +12,4 @@ pandas
 tqdm
 plotly
 pyyaml
-starlette-prometheus
+prometheus_fastapi_instrumentator

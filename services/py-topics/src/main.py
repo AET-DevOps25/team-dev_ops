@@ -2,7 +2,8 @@ from fastapi import FastAPI, HTTPException
 from niche_explorer_models.models.topic_discovery_request import TopicDiscoveryRequest
 from niche_explorer_models.models.topic_discovery_response import TopicDiscoveryResponse
 from .services.topic_service import topic_service
-from starlette_prometheus import metrics, PrometheusMiddleware
+
+from prometheus_fastapi_instrumentator import Instrumentator
 
 import logging
 import os
@@ -20,8 +21,8 @@ app = FastAPI(
     description="Discovers topics from article collections using ML clustering",
 )
 
-app.add_middleware(PrometheusMiddleware)
-app.add_route("/metrics", metrics)
+# Prometheus middleware for metrics
+Instrumentator().instrument(app).expose(app)
 
 @app.post("/api/v1/topics/discover", response_model=TopicDiscoveryResponse)
 async def discover_topics(request: TopicDiscoveryRequest):

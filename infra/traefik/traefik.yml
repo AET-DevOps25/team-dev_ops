@@ -1,3 +1,14 @@
+api:
+  dashboard: true
+log:
+  level: INFO
+metrics:
+  prometheus:
+    entryPoint: metrics
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
+
 providers:
   docker:
     exposedByDefault: false
@@ -10,13 +21,9 @@ entryPoints:
   metrics:
     address: ":8082"
 
-api:
-  dashboard: true
-  insecure: true  # dont use this in production!
-
-metrics:
-  prometheus:
-    entryPoint: metrics
-    addEntryPointsLabels: true
-    addRoutersLabels: true
-    addServicesLabels: true
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      storage: /letsencrypt/acme.json
+      # caServer: "https://acme-staging-v02.api.letsencrypt.org/directory" # Staging server to bypass rate limits for testing
+      tlsChallenge: {}
