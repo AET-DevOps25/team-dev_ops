@@ -305,7 +305,50 @@ The workflow is designed to be triggered manually from the **Actions** tab in th
 
 When initiated, it will prompt for the **Public IPv4 address** and the **Instance ID** of the target EC2 instance. After these details are provided, the action will automatically connect to the instance and deploy the application, mirroring the steps of the manual Ansible deployment.
 
+## Monitoring
 
+The monitoring infrastructure leverages Prometheus for robust data collection and alerting, and Grafana for intuitive data visualization.
+
+### Prometheus
+
+Prometheus serves as the primary time-series monitoring system. It is responsible for scraping metrics from services, processing them with recording rules, and evaluating alerting rules to identify and notify of issues.
+The Prometheus UI can be accessed at `prometheus.${DOMAIN}`. No authentication is required for basic viewing of metrics and alert states.
+
+#### Prometheus Metrics
+Prometheus collects the following metrics, which are defined via `infra/prometheus/metrics.rules.yml`
+
+| Metric Name                               | Description                                      | Recording Interval |
+| :---------------------------------------- | :----------------------------------------------- | :----------------- |
+| `job:http_requests_total`                 | Total HTTP request count per job                 | 1m                 |
+| `job:http_requests_total:rate5m`          | 5-minute average HTTP request rate per job       | 1m                 |
+| `job:http_requests_error:rate5m`          | 5-minute HTTP error (4xx/5xx) rate per job       | 1m                 |
+| `job:http_requests_errors`                | Total HTTP error (4xx/5xx) count per job         | 1m                 |
+| `job:http_request_duration_seconds:avg5m` | 5-minute average HTTP request duration per job   | 1m                 |
+
+#### Prometheus Alerts
+Prometheus continuously evaluates a set of alerting rules, defined in `infra/prometheus/alert.rules.yml`.  When the conditions for an alert are met, Prometheus will fire the alert.
+
+| Alert Name                          | Service         | Severity   | Trigger Condition (Simplified)                                     |
+| :---------------------------------- | :-------------- | :--------- | :----------------------------------------------------------------- |
+| **ServiceDown**                     | General         | `critical` | Service `up` metric is 0 for 1 minute (service is down).           |
+| **HighRequestRateGenAI**            | `genai`         | `warning`  | Request rate > 4 RPM for 1 minute (approaching 5 RPM limit).       |
+| **HighTotalRequestsGenAI**          | `genai`         | `warning`  | Total requests > 50 in 10 minutes for 1 minute.                    |
+| **HighDailyRequestsGenAI**          | `genai`         | `critical` | Total requests > 90 in 1 day for 1 minute (near 100 RPD limit).    |
+| **HighRequestRateArticleFetcher**   | `article-fetcher` | `warning`  | Request rate > 16 RPM for 1 minute (approaching 20 RPM limit).     |
+| **HighTotalRequestsArticleFetcher** | `article-fetcher` | `warning`  | Total requests > 150 in 10 minutes for 1 minute.                   |
+| **HighDailyRequestsArticleFetcher** | `article-fetcher` | `critical` | Total requests > 2000 in 1 day for 1 minute.                       |
+
+
+### Grafana
+Grafana visualizes the metrics and alerts of Prometheus and can be reached via `grafana.${DOMAIN}`. To login use the default credentials `admin:admin` and either chose to setup own credentials or skip the request to do so.
+
+#### Dashboards
+Grafana is pre-configured with the following dashboards to provide immediate insights into system:
+1.  **`Niche-Dashboard`**: This dashboard visualizes all the metrics defined in prometheus, offering a comprehensive overview of system performance.
+2.  **`System-Alerts`**: This dashboard is dedicated to displaying the current status of all alerts, making it easy to identify and track any firing alerts.
+
+
+If any dashboard appears to show "No Data", it could either mean that no relevant data has been collected yet, or the selected time range is not appropriate. Try adjusting the time period in the dashboard settings.
 ### Database Schema
 
 The application uses PostgreSQL with pgvector. Class Diagram:
