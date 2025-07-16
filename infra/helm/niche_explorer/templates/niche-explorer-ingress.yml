@@ -4,12 +4,26 @@ metadata:
   name: "niche-explorer-ingress"
   annotations:
 
+    {{- if .Values.ingress.tls.enabled }}
+    cert-manager.io/issuer: "{{ .Values.ingress.tls.issuer.name }}"
+    {{- end }}
+
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "http://{{ .Values.ingress.student_id }}{{ .Values.ingress.base_host }}"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-headers: "*"
 spec:
   ingressClassName: nginx
+
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - "{{ .Values.ingress.student_id }}{{ .Values.ingress.base_host }}"
+        - "prometheus.{{ .Values.ingress.student_id }}{{ .Values.ingress.base_host }}"
+        - "grafana.{{ .Values.ingress.student_id }}{{ .Values.ingress.base_host }}"
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+
   rules:
     - host: "{{ .Values.ingress.student_id }}{{ .Values.ingress.base_host }}"
       http:

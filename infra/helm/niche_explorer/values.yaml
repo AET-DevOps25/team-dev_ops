@@ -42,13 +42,22 @@ service:
     pullPolicy: Always
 
 ingress:
-  enabled: true
   className: "nginx"
-  student_id: "ge74tif" # <TODO: Placeholder student ID>
-  base_host: ".student.k8s.aet.cit.tum.de" # <TODO: Replace with actual FQDN>
-  # tls: true
-  # annotations:
-  #   cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  student_id: "ge74tif"
+  base_host: ".student.k8s.aet.cit.tum.de"
+
+  tls: 
+    enabled: true
+    clusteIssuer: "letsencrypt-prod-issuer"
+    secretName: "niche-explorer-tls"
+
+    issuer:
+      name: "letsencrypt-prod-issuer"
+      
+      acme:
+        email: "manuel.wilhelm@tum.de"
+        server: "https://acme-v02.api.letsencrypt.org/directory" # For testing: https://acme-staging-v02.api.letsencrypt.org/directory
+        privateKeySecretName: "letsencrypt-prod-issuer-account-key"
   
 api_secrets:
   name: niche-explorer-secrets
