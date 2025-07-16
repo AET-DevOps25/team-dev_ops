@@ -1,25 +1,48 @@
 # /etc/prometheus/rules/service_rules.yml
+# Rewritten using Gemini 2.5 Pro.
 groups:
 - name: service_level_indicators
   interval: 1m
   rules:
 
-  # Request Count (total)
+  # Define a common sub-expression for "actual API calls"
+  # This expression selects:
+  # - For genai: only /api/v1/classify and /api/v1/embeddings handlers
+  # - For article-fetcher: only /api/v1/articles handler
+  # - For all other jobs: any handler except /metrics, /health, /ready
+  - record: __api_calls_http_requests_total_filtered
+    expr: |
+      http_requests_total{job="genai", handler=~"^(?:/api/v1/classify|/api/v1/embeddings)$"}
+      or
+      http_requests_total{job="article-fetcher", handler="/api/v1/articles"}
+      or
+      http_requests_total{job!~"^(?:genai|article-fetcher)$", handler!~"^(?:/metrics|/health|/ready)$"}
+
+  # Request Count (total actual API calls)
   - record: job:http_requests_total
-    expr: sum(http_requests_total) by (job)
+    expr: sum(__api_calls_http_requests_total_filtered) by (job)
 
-  # Request Rate (total over 5 minutes)
+  # Request Rate (total actual API calls over 5 minutes)
   - record: job:http_requests_total:rate5m
-    expr: sum(rate(http_requests_total[5m])) by (job)
+    expr: sum(rate(__api_calls_http_requests_total_filtered[5m])) by (job)
 
-  # Error Rate (as a ratio)
+  # Error Rate (as a ratio of actual API calls)
   - record: job:http_requests_error:rate5m
-    expr: sum(rate(http_requests_total{status=~"4..|5.."}[5m])) by (job) / sum(rate(http_requests_total[5m])) by (job) or vector(0)
+    expr: |
+      sum(rate(__api_calls_http_requests_total_filtered{status=~"4..|5.."}[5m])) by (job)
+      /
+      sum(rate(__api_calls_http_requests_total_filtered[5m])) by (job)
+      or vector(0) # Handles division by zero (no requests)
 
-    # Errors
+  # Errors (total actual API calls with errors)
   - record: job:http_requests_errors
-    expr: sum(http_requests_total{status=~"4..|5.."}) by (job) or vector(0)
+    expr: sum(__api_calls_http_requests_total_filtered{status=~"4..|5.."}) by (job) or vector(0)
 
-  # Latency (average over 5 minutes)
-  - record: job:http_request_duration_seconds:avg5m
-    expr: sum(rate(http_request_duration_seconds_sum[5m])) by (job) / sum(rate(http_request_duration_seconds_count[5m])) by (job)
+  # Latency (average over 1 minute for actual API calls)
+  - record: job:http_request_duration_seconds:avg1m
+    expr: |
+      (
+        sum(rate(http_request_duration_seconds_sum{job="genai", handler=~"^(?:/api/v1/classify|/api/v1/embeddings)$"}[1m]) or rate(http_request_duration_seconds_sum{job="article-fetcher", handler="/api/v1/articles"}[1m]) or rate(http_request_duration_seconds_sum{job!~"^(?:genai|article-fetcher)$", handler!~"^(?:/metrics|/health|/ready)$"}[1m])) by (job)
+        /
+        sum(rate(http_request_duration_seconds_count{job="genai", handler=~"^(?:/api/v1/classify|/api/v1/embeddings)$"}[1m]) or rate(http_request_duration_seconds_count{job="article-fetcher", handler="/api/v1/articles"}[1m]) or rate(http_request_duration_seconds_count{job!~"^(?:genai|article-fetcher)$", handler!~"^(?:/metrics|/health|/ready)$"}[1m])) by (job)
+      ) or vector(NaN)

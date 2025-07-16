@@ -14,63 +14,115 @@ groups:
 
 - name: genai_alerts
   rules:
-  - alert: HighRequestRateGenAI
-    expr: sum(rate(http_requests_total{job="genai"}[1m])) > 4
+
+  # /api/v1/classify
+  - alert: HighRequestRateGenAI_Classify
+    expr: sum(rate(http_requests_total{job="genai", handler="/api/v1/classify"}[1m])) > 4
     for: 1m
     labels:
       severity: warning
       service: genai
+      endpoint: classify
     annotations:
-      summary: "High request rate detected on genai server"
-      description: "The request rate to the genai server ({{ $value }} requests per minute) is approaching the Gemini free tier limit of 5 RPM."
+      summary: "High request rate detected on genai Classify endpoint"
+      description: "The request rate to the genai /api/v1/classify endpoint ({{ $value }} requests per minute) is approaching the Gemini free tier limit of 5 RPM."
 
-  - alert: HighTotalRequestsGenAI
-    expr: sum(increase(http_requests_total{job="genai"}[10m])) > 50
+  # /api/v1/classify
+  - alert: HighTotalRequestsGenAI_Classify
+    expr: sum(increase(http_requests_total{job="genai", handler="/api/v1/classify"}[10m])) > 50
     for: 1m
     labels:
       severity: warning
       service: genai
+      endpoint: classify
     annotations:
-      summary: "High total request count detected on genai server"
-      description: "The total number of requests to the genai server ({{ $value }} requests) has exceeded 50 in the last 10 minutes, approaching the Gemini free tier daily limit of 100 RPD."
+      summary: "High total request count detected on genai Classify endpoint"
+      description: "The total number of requests to the genai /api/v1/classify endpoint ({{ $value }} requests) has exceeded 50 in the last 10 minutes, approaching the Gemini free tier daily limit of 100 RPD."
 
-  - alert: HighDailyRequestsGenAI
-    expr: sum(increase(http_requests_total{job="genai"}[1d])) > 90
+  # /api/v1/classify
+  - alert: HighDailyRequestsGenAI_Classify
+    expr: sum(increase(http_requests_total{job="genai", handler="/api/v1/classify"}[1d])) > 90
     for: 1m
     labels:
       severity: critical
       service: genai
+      endpoint: classify
     annotations:
-      summary: "High daily request count detected on genai server"
-      description: "The total number of requests to the genai server today ({{ $value }} requests) has exceeded 90, nearing the Gemini 2.5 Pro free tier limit of 100 RPD."
+      summary: "High daily request count detected on genai Classify endpoint"
+      description: "The total number of requests to the genai /api/v1/classify endpoint today ({{ $value }} requests) has exceeded 90, nearing the Gemini 2.5 Pro free tier limit of 100 RPD."
+
+  # /api/v1/embeddings
+  - alert: HighRequestRateGenAI_Embedding
+    expr: sum(rate(http_requests_total{job="genai", handler="/api/v1/embeddings"}[1m])) > 4
+    for: 1m
+    labels:
+      severity: warning
+      service: genai
+      endpoint: embedding
+    annotations:
+      summary: "High request rate detected on genai Embedding endpoint"
+      description: "The request rate to the genai /api/v1/embeddings endpoint ({{ $value }} requests per minute) is approaching the Gemini free tier limit of 5 RPM."
+
+  # /api/v1/embeddings
+  - alert: HighTotalRequestsGenAI_Embedding
+    expr: sum(increase(http_requests_total{job="genai", handler="/api/v1/embeddings"}[10m])) > 50
+    for: 1m
+    labels:
+      severity: warning
+      service: genai
+      endpoint: embedding
+    annotations:
+      summary: "High total request count detected on genai Embedding endpoint"
+      description: "The total number of requests to the genai /api/v1/embeddings endpoint ({{ $value }} requests) has exceeded 50 in the last 10 minutes, approaching the Gemini free tier daily limit of 100 RPD."
+  
+  # /api/v1/embeddings
+  - alert: HighDailyRequestsGenAI_Embedding
+    expr: sum(increase(http_requests_total{job="genai", handler="/api/v1/embeddings"}[1d])) > 90
+    for: 1m
+    labels:
+      severity: critical
+      service: genai
+      endpoint: embedding
+    annotations:
+      summary: "High daily request count detected on genai Embedding endpoint"
+      description: "The total number of requests to the genai /api/v1/embeddings endpoint today ({{ $value }} requests) has exceeded 90, nearing the Gemini 2.5 Pro free tier limit of 100 RPD."
+
 
 - name: article_fetcher_alerts
   rules:
-  - alert: HighRequestRateArticleFetcher
-    expr: sum(rate(http_requests_total{job="article-fetcher"}[1m])) > 16
-    for: 1m
-    labels:
-      severity: warning
-      service: article-fetcher
-    annotations:
-      summary: "High request rate detected on article-fetcher server"
-      description: "The request rate to the article-fetcher server ({{ $value }} requests per minute) is approaching the arXiv RSS feed limit of ~20 RPM."
-  - alert: HighTotalRequestsArticleFetcher
-    expr: sum(increase(http_requests_total{job="article-fetcher"}[10m])) > 150
-    for: 1m
-    labels:
-      severity: warning
-      service: article-fetcher
-    annotations:
-      summary: "High total request count detected on article-fetcher server"
-      description: "The total number of requests to the article-fetcher server ({{ $value }} requests) has exceeded 150 in the last 10 minutes."
 
-  - alert: HighDailyRequestsArticleFetcher
-    expr: sum(increase(http_requests_total{job="article-fetcher"}[1d])) > 2000
+  # /api/v1/articles
+  - alert: HighRequestRateArticleFetcher_Articles
+    expr: sum(rate(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[1m])) > 16
+    for: 1m
+    labels:
+      severity: warning
+      service: article-fetcher
+      endpoint: articles
+    annotations:
+      summary: "High request rate detected on article-fetcher's /api/v1/articles endpoint"
+      description: "The request rate to the article-fetcher's /api/v1/articles endpoint ({{ $value }} requests per minute) is approaching the (assumed) arXiv RSS feed limit of ~20 RPM."
+  
+    # /api/v1/articles
+  - alert: HighTotalRequestsArticleFetcher_Articles
+    expr: sum(increase(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[10m])) > 150
+    for: 1m
+    labels:
+      severity: warning
+      service: article-fetcher
+      endpoint: articles
+    annotations:
+      summary: "High total request count detected on article-fetcher's /api/v1/articles endpoint"
+      description: "The total number of requests to the article-fetcher's /api/v1/articles endpoint ({{ $value }} requests) has exceeded 150 in the last 10 minutes."
+
+  # /api/v1/articles
+  - alert: HighDailyRequestsArticleFetcher_Articles
+    expr: sum(increase(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[1d])) > 2000
     for: 1m
     labels:
       severity: critical
       service: article-fetcher
+      endpoint: articles
     annotations:
-      summary: "High daily request count detected on article-fetcher server"
-      description: "The total number of requests to the article-fetcher server today ({{ $value  }} requests) has exceeded 2000."
+      summary: "High daily request count detected on article-fetcher's /api/v1/articles endpoint"
+      description: "The total number of requests to the article-fetcher's /api/v1/articles endpoint today ({{ $value  }} requests) has exceeded 2000."

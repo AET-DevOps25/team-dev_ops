@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 7,
+  "id": 4,
   "links": [],
   "panels": [
     {
@@ -172,6 +172,7 @@
             }
           },
           "mappings": [],
+          "noValue": "No Requests made",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -306,13 +307,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "job:http_request_duration_seconds:avg5m",
+          "expr": "job:http_request_duration_seconds:avg1m",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Latency (5m)",
+      "title": "Latency (1m)",
       "transparent": true,
       "type": "timeseries"
     },
@@ -477,5 +478,5 @@
   "timezone": "browser",
   "title": "Niche Application Dashboard",
   "uid": "3383f53b-97e4-4062-b13b-fee0360bc7b8",
-  "version": 10
+  "version": 1
 }
