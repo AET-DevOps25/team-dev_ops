@@ -1,0 +1,11 @@
+groups:
+- name: service-alerts
+  rules:
+  - alert: ServiceDown
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Service '{{ $labels.job }}' is down"
+      description: "The service '{{ $labels.job }}' at instance '{{ $labels.instance }}' has been down for more than 1 minute."

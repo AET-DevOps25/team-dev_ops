@@ -3,10 +3,10 @@ groups:
     - orgId: 1
       name: Availability
       folder: notifiers
-      interval: 1m
+      interval: 30s
       rules:
-        - uid: ferbp85ixrv9ce
-          title: API Server Down Alert
+        - uid: aes3lh678oao0e
+          title: Availability
           condition: C
           data:
             - refId: A
@@ -17,7 +17,7 @@ groups:
               model:
                 disableTextWrap: false
                 editorMode: builder
-                expr: up{job="traefik"}
+                expr: ALERTS{alertname="ServiceDown", alertstate="firing"}
                 fullMetaSearch: false
                 includeNullMetadata: true
                 instant: true
@@ -34,7 +34,7 @@ groups:
                     - evaluator:
                         params:
                             - 0
-                        type: eq
+                        type: gt
                       operator:
                         type: and
                       query:
@@ -54,11 +54,9 @@ groups:
                 type: threshold
           noDataState: NoData
           execErrState: Error
-          for: 1m
-          annotations:
-            description: The Traefik service is unavailable indictating that the service went offline or is currently not working properly!
-            summary: <Alert!> Potential System Outage!
+          for: 1m30s
+          annotations: {}
           labels: {}
           isPaused: false
           notification_settings:
-            receiver: Manuel Mail
+            receiver: grafana-default-email
