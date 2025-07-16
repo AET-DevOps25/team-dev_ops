@@ -9,5 +9,8 @@ data:
   prometheus.yml: |-
     {{- .Files.Get "prometheus/prometheus-k8s.yml" | nindent 4 }}
 
-  traefik_rules.yml: |-
-    {{- .Files.Get "prometheus/traefik_rules.yml" | nindent 4 }}
+  metrics.rules.yml: |-
+    {{- .Files.Get "prometheus/metrics.rules.yml" | nindent 4 }}
+
+  alert.rules.yml: |-
+    {{- .Files.Get "prometheus/alert.rules.yml" | nindent 4 }}
