@@ -437,3 +437,6 @@ services/*/chroma_db/
 .terraform/
 .terraform.*
 # *.tfvars # Deliberately "exposing" this file because the content is not sensible and the ip is invalid after a while anyways
+
+# Certificate acme's
+letsencrypt/
