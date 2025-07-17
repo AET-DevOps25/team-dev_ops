@@ -23,6 +23,17 @@ const QueryForm: React.FC<QueryFormProps> = ({
   isLoading = false,
   loadingMessage = "Discovering Topics..."
 }) => {
+
+  // Handler for key presses on the input field
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      if (query.trim() && !isLoading && !showSettings) {
+        e.preventDefault();
+        onAnalyze();
+      }
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -32,6 +43,7 @@ const QueryForm: React.FC<QueryFormProps> = ({
           placeholder="e.g., Show fast-growing trends in CV for 3D registration"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
+          onKeyDown={handleInputKeyDown} // Start analysis on Enter key press
           className="w-full transition-all duration-200"
           disabled={isLoading}
         />
