@@ -317,13 +317,19 @@ The Prometheus UI can be accessed at `prometheus.${DOMAIN}`. No authentication i
 #### Prometheus Metrics
 Prometheus collects the following metrics, which are defined via `infra/prometheus/metrics.rules.yml`
 
-| Metric Name                               | Description                                                                 | Recording Interval |
-| :---------------------------------------- | :-------------------------------------------------------------------------- | :----------------- |
-| `job:http_requests_total`                 | Total count of filtered HTTP API requests per job                           | 1m                 |
-| `job:http_requests_total:rate5m`          | 5-minute average rate of filtered HTTP API requests per job                 | 1m                 |
-| `job:http_requests_error:rate5m`          | 5-minute HTTP error (4xx/5xx) rate (ratio) of filtered API requests per job | 1m                 |
-| `job:http_requests_errors`                | Total count of HTTP errors (4xx/5xx) from filtered API requests per job     | 1m                 |
-| `job:http_request_duration_seconds:avg1m` | 1-minute average HTTP request duration of filtered API calls per job        | 1m                 |
+| Metric Name                                                | Description                                                                               | Recording Interval |
+| :--------------------------------------------------------- | :---------------------------------------------------------------------------------------- | :----------------- |
+| **job:http_requests_total**                                | Total count of filtered HTTP API requests per job                                         | 1m                 |
+| **job:http_requests_total:classify_and_embeddings**        | Total count of GenAI Classify and Embeddings API requests (last 1 day)                    | 1m                 |
+| **job:http_requests_total:classify_and_embeddings:10m**    | Total count of GenAI Classify and Embeddings API requests (last 10 minutes)               | 1m                 |
+| **job:http_requests_total:rate_classify_and_embeddings**   | 1-minute rate of GenAI Classify and Embeddings API requests                               | 1m                 |
+| **job:http_requests_total:article_fetcher_articles**       | Total count of Article Fetcher API requests (last 1 day)                                  | 1m                 |
+| **job:http_requests_total:article_fetcher_articles:10m**   | Total count of Article Fetcher API requests (last 10 minutes)                             | 1m                 |
+| **job:http_requests_total:rate_article_fetcher_articles**  | 1-minute rate of Article Fetcher API requests                                             | 1m                 |
+| **job:http_requests_total:rate5m**                         | 5-minute average rate of filtered HTTP API requests per job                               | 1m                 |
+| **job:http_requests_error:rate5m**                         | 5-minute HTTP error (4xx/5xx) rate (ratio) of filtered API requests per job               | 1m                 |
+| **job:http_requests_errors**                               | Total count of HTTP errors (4xx/5xx) from filtered API requests per job                   | 1m                 |
+| **job:http_request_duration_seconds:avg1m**                | 1-minute average HTTP request duration of filtered API calls per job                      | 1m                 |
 
 #### Prometheus Alerts
 Prometheus continuously evaluates a set of alerting rules, defined in `infra/prometheus/alert.rules.yml`.  When the conditions for an alert are met, Prometheus will fire the alert.
@@ -348,7 +354,8 @@ Grafana visualizes the metrics and alerts of Prometheus and can be reached via `
 #### Dashboards
 Grafana is pre-configured with the following dashboards to provide immediate insights into system:
 1.  **`Niche-Dashboard`**: This dashboard visualizes all the metrics defined in prometheus, offering a comprehensive overview of system performance.
-2.  **`System-Alerts`**: This dashboard is dedicated to displaying the current status of all alerts, making it easy to identify and track any firing alerts.
+2.  **`Finer Niche API Calls`**: This dashboard provides detailed insights into specific API call patterns for the `genai` and `article-fetcher` services.
+3.  **`System-Alerts`**: This dashboard is dedicated to displaying the current status of all alerts, making it easy to identify and track any firing alerts.
 
 
 If any dashboard appears to show "No Data", it could either mean that no relevant data has been collected yet, or the selected time range is not appropriate. Try adjusting the time period in the dashboard settings.
