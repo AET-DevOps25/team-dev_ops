@@ -471,8 +471,8 @@
     ]
   },
   "time": {
-    "from": "2025-07-16T14:39:56.314Z",
-    "to": "2025-07-16T17:31:06.670Z"
+    "from": "now-30m",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
