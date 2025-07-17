@@ -29,7 +29,7 @@ groups:
 
   # /api/v1/classify
   - alert: HighTotalRequestsGenAI_Classify
-    expr: sum(increase(http_requests_total{job="genai", handler="/api/v1/classify"}[10m])) > 50
+    expr: sum(round(increase(http_requests_total{job="genai", handler="/api/v1/classify"}[10m]))) > 50
     for: 1m
     labels:
       severity: warning
@@ -41,7 +41,7 @@ groups:
 
   # /api/v1/classify
   - alert: HighDailyRequestsGenAI_Classify
-    expr: sum(increase(http_requests_total{job="genai", handler="/api/v1/classify"}[1d])) > 90
+    expr: sum(round(increase(http_requests_total{job="genai", handler="/api/v1/classify"}[1d]))) > 90
     for: 1m
     labels:
       severity: critical
@@ -65,7 +65,7 @@ groups:
 
   # /api/v1/embeddings
   - alert: HighTotalRequestsGenAI_Embedding
-    expr: sum(increase(http_requests_total{job="genai", handler="/api/v1/embeddings"}[10m])) > 50
+    expr: sum(round(increase(http_requests_total{job="genai", handler="/api/v1/embeddings"}[10m]))) > 50
     for: 1m
     labels:
       severity: warning
@@ -77,7 +77,7 @@ groups:
   
   # /api/v1/embeddings
   - alert: HighDailyRequestsGenAI_Embedding
-    expr: sum(increase(http_requests_total{job="genai", handler="/api/v1/embeddings"}[1d])) > 90
+    expr: sum(round(increase(http_requests_total{job="genai", handler="/api/v1/embeddings"}[1d]))) > 90
     for: 1m
     labels:
       severity: critical
@@ -105,7 +105,7 @@ groups:
   
     # /api/v1/articles
   - alert: HighTotalRequestsArticleFetcher_Articles
-    expr: sum(increase(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[10m])) > 150
+    expr: sum(round(increase(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[10m]))) > 150
     for: 1m
     labels:
       severity: warning
@@ -117,7 +117,7 @@ groups:
 
   # /api/v1/articles
   - alert: HighDailyRequestsArticleFetcher_Articles
-    expr: sum(increase(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[1d])) > 2000
+    expr: sum(round(increase(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[1d]))) > 2000
     for: 1m
     labels:
       severity: critical
