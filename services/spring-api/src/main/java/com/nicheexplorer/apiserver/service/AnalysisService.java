@@ -1,7 +1,6 @@
 package com.nicheexplorer.apiserver.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nicheexplorer.generated.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,6 @@ public class AnalysisService {
 
     private final JdbcTemplate jdbcTemplate;
     private final AnalysisOrchestrationService orchestrationService;
-    private final ObjectMapper objectMapper;
 
     public void startAnalysis(AnalyzeRequest request) {
         UUID analysisId = UUID.randomUUID();
@@ -77,11 +75,11 @@ public class AnalysisService {
             classificationMono = Mono.just(manualClassification);
         } else {
             logger.info("Auto-detect mode for analysis {}", analysisId);
-            classificationMono = orchestrationService.classifyQuery(query)
-                    .doOnSuccess(classification -> jdbcTemplate.update("UPDATE analysis SET status = ? WHERE id = ?", "CLASSIFYING", analysisId));
+            classificationMono = orchestrationService.classifyQuery(query);
         }
 
         classificationMono
+                .doOnSuccess(classification -> jdbcTemplate.update("UPDATE analysis SET status = ? WHERE id = ?", "CLASSIFYING", analysisId))
                 .flatMap(classification -> {
                     // Initial save to DB
                     String analysisType = "research".equalsIgnoreCase(classification.getSourceType().getValue()) ? "research" : "community";

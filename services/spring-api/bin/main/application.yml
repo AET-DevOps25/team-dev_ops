@@ -1,11 +1,11 @@
 genai:
-  base-url: http://genai:8000
+  base-url: ${GENAI_BASE_URL:http://genai:8000}
 
 topic:
-  base-url: http://topic-discovery:8100
+  base-url: ${TOPIC_BASE_URL:http://topic-discovery:8100}
 
 fetcher:
-  base-url: http://article-fetcher:8200
+  base-url: ${FETCHER_BASE_URL:http://article-fetcher:8200}
 
 spring:
   datasource:

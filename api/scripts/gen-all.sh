@@ -3,12 +3,15 @@
 set -euo pipefail
 
 # Generate Java classes (models, api, invoker)
+
+rm -rf services/spring-api/src/generated/java   # <-- remove stale models
+
 npx openapi-generator-cli generate -i api/openapi.yaml -g java \
   -o services/spring-api/src/generated/java --skip-validate-spec \
   --api-package=com.nicheexplorer.generated.api \
   --model-package=com.nicheexplorer.generated.model \
   --invoker-package=com.nicheexplorer.generated.invoker \
-  --additional-properties=library=native,useJakartaEe=true,serializationLibrary=jackson
+  --additional-properties=library=webclient,useJakartaEe=true,serializationLibrary=jackson,openapiNullable=false
 
 # Python FastAPI server models - generate Pydantic models for each service
 npx openapi-generator-cli generate -i api/openapi.yaml -g python-fastapi \
