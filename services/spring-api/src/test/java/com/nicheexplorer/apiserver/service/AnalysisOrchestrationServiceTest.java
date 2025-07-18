@@ -5,6 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nicheexplorer.generated.model.ArticleFetchRequest;
 import com.nicheexplorer.generated.model.ArticleFetchResponse;
 import com.nicheexplorer.generated.model.ClassifyResponse;
+import com.nicheexplorer.generated.api.AiApi;
+import com.nicheexplorer.generated.api.ArticlesApi;
+import com.nicheexplorer.generated.api.TopicsApi;
+import com.nicheexplorer.generated.invoker.ApiClient;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -43,17 +47,17 @@ public class AnalysisOrchestrationServiceTest {
 
     @BeforeEach
     void initialize() {
-        String genaiUrl = String.format("http://localhost:%s", mockGenaiServer.getPort());
-        String fetcherUrl = String.format("http://localhost:%s", mockFetcherServer.getPort());
-        // For this test, we don't need the topics service, so we can point it to any valid URL
-        String topicsUrl = fetcherUrl;
+        ApiClient genaiApiClient = new ApiClient().setBasePath(mockGenaiServer.url("/").toString());
+        AiApi aiApi = new AiApi(genaiApiClient);
 
-        orchestrationService = new AnalysisOrchestrationService(
-                WebClient.builder(),
-                genaiUrl,
-                fetcherUrl,
-                topicsUrl
-        );
+        ApiClient fetcherApiClient = new ApiClient().setBasePath(mockFetcherServer.url("/").toString());
+        ArticlesApi articlesApi = new ArticlesApi(fetcherApiClient);
+
+        // Assume topics service is also mocked, pointing to one of the existing servers for simplicity
+        ApiClient topicsApiClient = new ApiClient().setBasePath(mockFetcherServer.url("/").toString());
+        TopicsApi topicsApi = new TopicsApi(topicsApiClient);
+
+        orchestrationService = new AnalysisOrchestrationService(aiApi, articlesApi, topicsApi);
     }
 
     /**
