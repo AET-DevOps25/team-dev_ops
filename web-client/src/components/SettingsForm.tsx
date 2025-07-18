@@ -88,20 +88,6 @@ const SettingsForm: React.FC<SettingsFormProps> = ({
   }, [searchTerms, selectedCategory, source, onFeedChange]);
   return (
     <div className="flex flex-col space-y-6 h-full">
-      <div className="flex items-center justify-between space-x-4">
-        <div className="space-y-0.5">
-          <Label htmlFor="auto-detect">Auto-detect source</Label>
-          <p className="text-sm text-muted-foreground">
-            Automatically determine if query is research or community focused
-          </p>
-        </div>
-        <Switch
-          id="auto-detect"
-          checked={autoDetect}
-          onCheckedChange={onAutoDetectChange}
-        />
-      </div>
-
       <div className="space-y-2">
         <Label htmlFor="max-articles">Maximum articles to analyze</Label>
         <Input
@@ -121,7 +107,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({
           Maximum number of articles (1-150) to use for the analysis.
         </p>
       </div>
-
+      
       {/* Number of topics selection */}
       <div className="space-y-2">
         <Label htmlFor="nr-topics">Maximum number of topics</Label>
@@ -141,6 +127,20 @@ const SettingsForm: React.FC<SettingsFormProps> = ({
         <p className="text-sm text-muted-foreground">
           Upper limit (1–7). The algorithm may return fewer clusters if the data doesn&apos;t support more.
         </p>
+      </div>
+
+      <div className="flex items-center justify-between space-x-4">
+        <div className="space-y-0.5">
+          <Label htmlFor="auto-detect-query">Use custom query</Label>
+          <p className="text-sm text-muted-foreground">
+            Bypass AI-generated search query and use your own for topic clustering.
+          </p>
+        </div>
+        <Switch
+          id="auto-detect-query"
+          checked={!autoDetect}
+          onCheckedChange={(checked) => onAutoDetectChange(!checked)}
+        />
       </div>
 
       {/* Manual source selection */}
