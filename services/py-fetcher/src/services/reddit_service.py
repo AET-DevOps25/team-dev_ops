@@ -2,6 +2,7 @@ import feedparser
 from typing import List, Optional
 from datetime import datetime, timezone # Keep 'timezone' import
 import logging
+import requests
 import time # Needed for time.mktime
 
 from niche_explorer_models.models.article import Article
@@ -14,17 +15,24 @@ class RedditFetcher:
         self.user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 NicheExplorer/1.0'
 
     async def fetch(self, subreddit: str, max_results: int = 50) -> List[Article]:
+        
+        logger.info(f"Fetching Reddit RSS for r/{subreddit} with max_results={max_results}")
+
         url = f"https://www.reddit.com/r/{subreddit}.rss"
         
-        # Parsing the RSS feed with a custom User-Agent, which is crucial for Reddit to allow the request
-        feed = feedparser.parse(url, agent=self.user_agent)
+        # Wrap Reddit request in a request with custom headers, including User-Agent and Accept headers to avoid being blocked by Reddit's anti-bot measures.
+        headers = {
+            "User-Agent": self.user_agent,
+            "Accept": "application/rss+xml, application/xml"
+        }
+        response = requests.get(url, headers=headers)
 
-        articles = []
-        
-        # Checking for API error
-        if feed.status >= 400:
-            logger.error(f"HTTP error {feed.status} fetching Reddit RSS for r/{subreddit}. This might mean the request was blocked. Response: {feed.bozo_exception if feed.bozo else 'No specific parse error.'}")
+        if response.status_code >= 400:
+            logger.error(f"HTTP error {response.status_code} fetching Reddit RSS for r/{subreddit}")
             return []
+
+        feed = feedparser.parse(response.content)
+        articles = []
         
         # Check for general parsing errors (malformed XML, etc.)
         if feed.bozo:
@@ -63,6 +71,7 @@ class RedditFetcher:
                     source="reddit",
                 )
             )
+        logger.info(f"Fetched articles {articles} from r/{subreddit}. Total: {len(articles)}")
         logger.info(f"Successfully fetched {len(articles)} articles from r/{subreddit}.")
         return articles
 
