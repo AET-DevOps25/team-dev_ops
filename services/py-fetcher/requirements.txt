@@ -5,3 +5,4 @@ arxiv
 feedparser
 requests
 prometheus_fastapi_instrumentator
+beautifulsoup4

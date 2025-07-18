@@ -4,6 +4,9 @@ from datetime import datetime, timezone # Keep 'timezone' import
 import logging
 import requests
 import time # Needed for time.mktime
+import re # For regex operations on text
+
+from bs4 import BeautifulSoup # HTML parsing of Reddit entries
 
 from niche_explorer_models.models.article import Article
 
@@ -60,18 +63,42 @@ class RedditFetcher:
                 except Exception as e:
                     logger.warning(f"Error parsing 'updated_parsed' date for entry '{entry.get('title', 'N/A')}': {e}")
 
+            # --- Reddit has a lot of HTML and other tags in the summary field, so we need to clean it up ---
+            # Extract all text from the parsed HTML.
+            full_raw_text = BeautifulSoup(entry.get("summary", ""), 'html.parser').get_text(separator='\n', strip=True)
+            
+            # Clean up Reddit-specific HTML comments (sometimes they appear as text)
+            cleaned_body_text = full_raw_text.replace("<!-- SC_OFF -->", "").replace("<!-- SC_ON -->", "")
+            
+            match = re.match(r'^(https?:\/\/(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}(?:\/[^\s]*?\.?(?:jpg|jpeg|png|gif|webp|mp4|webm))?\s+)?(.*)', 
+                             cleaned_body_text, re.DOTALL)
+            if match and match.group(2):
+                cleaned_body_text = match.group(2).strip()
+                
+            # Collapse multiple consecutive newlines into a maximum of two newlines (for proper paragraph breaks)
+            cleaned_body_text = re.sub(r'\n\s*\n', '\n\n', cleaned_body_text)
+            # Remove lines that contain only whitespace
+            cleaned_body_text = re.sub(r'^\s*$\n', '', cleaned_body_text, flags=re.MULTILINE)
+            
+            # Remove '[link]' if it appears before '[comments]' or at the end
+            cleaned_body_text = re.sub(r'\s*\[link\](?=\s*\[comments\]|$)', '', cleaned_body_text, flags=re.DOTALL)
+            
+            # Remove '[comments]' and any surrounding whitespace if it's at the very end
+            cleaned_body_text = re.sub(r'\s*\[comments\]\s*$', '', cleaned_body_text, flags=re.DOTALL)
+            # Strip leading/trailing whitespace from the entire string
+            cleaned_body_text = cleaned_body_text.strip()
+            
             articles.append(
                 Article(
                     id=entry.id,
                     title=entry.title,
                     link=entry.link,
-                    summary=entry.summary,
+                    summary=cleaned_body_text,
                     authors=[],
                     published=published,
                     source="reddit",
                 )
             )
-        logger.info(f"Fetched articles {articles} from r/{subreddit}. Total: {len(articles)}")
         logger.info(f"Successfully fetched {len(articles)} articles from r/{subreddit}.")
         return articles
 

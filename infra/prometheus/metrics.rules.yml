@@ -26,26 +26,49 @@ groups:
   - record: job:http_requests_total:classify_and_embeddings
     expr: sum by (handler) (round(increase(http_requests_total{job="genai", handler=~"/api/v1/embeddings|/api/v1/classify"}[1d])))
 
-  # Number of Classify Requests and Embeddings Requests - Separate GenAI Calls 10m
-  - record: job:http_requests_total:classify_and_embeddings:10m
-    expr: sum by (handler) (round(increase(http_requests_total{job="genai", handler=~"/api/v1/embeddings|/api/v1/classify"}[10m])))
+  # Number of Classify Requests and Embeddings Requests - Separate GenAI Calls 1h
+  - record: job:http_requests_total:classify_and_embeddings:1h
+    expr: sum by (handler) (round(increase(http_requests_total{job="genai", handler=~"/api/v1/embeddings|/api/v1/classify"}[1h])))
   
-  # Request Rate Classify and Embeddings - Separate GenAI Calls
-  - record: job:http_requests_total:rate_classify_and_embeddings
-    expr: sum(rate(http_requests_total{job="genai", handler=~"/api/v1/embeddings|/api/v1/classify"}[1m])) by (handler)
-  
+  # Number of Classify Requests and Embeddings Requests - Separate GenAI Calls 1m
+  - record: job:job:http_requests_total:classify_and_embeddings:1m
+    expr: sum by (handler) (round(increase(http_requests_total{job="genai", handler=~"/api/v1/embeddings|/api/v1/classify"}[1m])))
 
-  # Fetched Articles Count - Separate Article Fetcher Calls 1d
+  # Fetched Articles Count - Separate Article Fetcher Calls (HTTP requests for /articles) 1d
   - record: job:http_requests_total:article_fetcher_articles
     expr: sum(round(increase(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[1d])))
 
-  # Fetched Articles Count - Separate Article Fetcher Calls 10m
-  - record: job:http_requests_total:article_fetcher_articles:10m
-    expr: sum(round(increase(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[10m])))
+  # Fetched Articles Count - Separate Article Fetcher Calls (HTTP requests for /articles) 1h
+  - record: job:http_requests_total:article_fetcher_articles:1h
+    expr: sum(round(increase(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[1h])))
 
-  # Request Rate Article Fetcher - Separate Article Fetcher Calls
-  - record: job:http_requests_total:rate_article_fetcher_articles
-    expr: sum(rate(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[1m])) by (handler)  
+  # Fetched Articles Count - Separate Article Fetcher Calls (HTTP requests for /articles) 1m
+  - record: job:http_requests_total:article_fetcher_articles:1m
+    expr: sum(increase(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[1m])) by (handler)  
+
+  # ArXiv Fetcher Call Count 1d
+  - record: job:arxiv_fetch_total:1d
+    expr: sum(round(increase(arxiv_fetch_total{job="article-fetcher"}[1d])))
+
+  # ArXiv Fetcher Call Count 1h
+  - record: job:arxiv_fetch_total:1h
+    expr: sum(round(increase(arxiv_fetch_total{job="article-fetcher"}[1h])))
+
+  # ArXiv Fetcher Call Count 1m
+  - record: job:arxiv_fetch_total:1m
+    expr: sum(round(increase(arxiv_fetch_total{job="article-fetcher"}[1m])))
+
+  # Reddit Fetcher Call Count 1d
+  - record: job:reddit_fetch_total:1d
+    expr: sum(round(increase(reddit_fetch_total{job="article-fetcher"}[1d])))
+
+  # Reddit Fetcher Call Count 1h
+  - record: job:reddit_fetch_total:1h
+    expr: sum(round(increase(reddit_fetch_total{job="article-fetcher"}[1h])))
+
+  # Reddit Fetcher Call Count 1m
+  - record: job:reddit_fetch_total:1m
+    expr: sum(round(increase(reddit_fetch_total{job="article-fetcher"}[1m])))
 
   # Request Rate (total actual API calls over 5 minutes)
   - record: job:http_requests_total:rate5m

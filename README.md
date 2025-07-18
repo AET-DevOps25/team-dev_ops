@@ -317,36 +317,44 @@ The Prometheus UI can be accessed at `prometheus.${DOMAIN}`. No authentication i
 #### Prometheus Metrics
 Prometheus collects the following metrics, which are defined via `infra/prometheus/metrics.rules.yml`
 
-| Metric Name                                                | Description                                                                               | Recording Interval |
-| :--------------------------------------------------------- | :---------------------------------------------------------------------------------------- | :----------------- |
-| **job:http_requests_total**                                | Total count of filtered HTTP API requests per job                                         | 1m                 |
-| **job:http_requests_total:classify_and_embeddings**        | Total count of GenAI Classify and Embeddings API requests (last 1 day)                    | 1m                 |
-| **job:http_requests_total:classify_and_embeddings:10m**    | Total count of GenAI Classify and Embeddings API requests (last 10 minutes)               | 1m                 |
-| **job:http_requests_total:rate_classify_and_embeddings**   | 1-minute rate of GenAI Classify and Embeddings API requests                               | 1m                 |
-| **job:http_requests_total:article_fetcher_articles**       | Total count of Article Fetcher API requests (last 1 day)                                  | 1m                 |
-| **job:http_requests_total:article_fetcher_articles:10m**   | Total count of Article Fetcher API requests (last 10 minutes)                             | 1m                 |
-| **job:http_requests_total:rate_article_fetcher_articles**  | 1-minute rate of Article Fetcher API requests                                             | 1m                 |
-| **job:http_requests_total:rate5m**                         | 5-minute average rate of filtered HTTP API requests per job                               | 1m                 |
-| **job:http_requests_error:rate5m**                         | 5-minute HTTP error (4xx/5xx) rate (ratio) of filtered API requests per job               | 1m                 |
-| **job:http_requests_errors**                               | Total count of HTTP errors (4xx/5xx) from filtered API requests per job                   | 1m                 |
-| **job:http_request_duration_seconds:avg1m**                | 1-minute average HTTP request duration of filtered API calls per job                      | 1m                 |
+| Metric Name                                                 | Description                                                                                        | Recording Interval |
+| :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------- | :----------------- |
+| **job:http_requests_total**                                 | Total count of filtered HTTP API requests per job                                                  | 1m                 |
+| **job:http_requests_total:classify_and_embeddings**         | Total count of GenAI Classify and Embeddings API requests (last 1 day)                             | 1m                 |
+| **job:http_requests_total:classify_and_embeddings:1h**      | Total count of GenAI Classify and Embeddings API requests (last 1 hour)                            | 1m                 |
+| **job:http_requests_total:classify_and_embeddings:1m**      | Total count of GenAI Classify and Embeddings API requests (last 1 minute)                          | 1m                 |
+| **job:http_requests_total:article_fetcher_articles**        | Total count of Article Fetcher API requests to `/api/v1/articles` (last 1 day)                     | 1m                 |
+| **job:http_requests_total:article_fetcher_articles:1h**     | Total count of Article Fetcher API requests to `/api/v1/articles` (last 1 hour)                    | 1m                 |
+| **job:http_requests_total:article_fetcher_articles:1m**     | Total count of Article Fetcher API requests to `/api/v1/articles` (last 1 minute)                  | 1m                 |
+| **job:arxiv_fetch_total:1d**                                | Total count of internal ArXiv fetcher API calls (last 1 day)                                       | 1m                 |
+| **job:arxiv_fetch_total:1h**                                | Total count of internal ArXiv fetcher API calls (last 1 hour)                                      | 1m                 |
+| **job:arxiv_fetch_total:1m**                                | Total count of internal ArXiv fetcher API calls (last 1 minute)                                    | 1m                 |
+| **job:reddit_fetch_total:1d**                               | Total count of internal Reddit fetcher API calls (last 1 day)                                      | 1m                 |
+| **job:reddit_fetch_total:1h**                               | Total count of internal Reddit fetcher API calls (last 1 hour)                                     | 1m                 |
+| **job:reddit_fetch_total:1m**                               | Total count of internal Reddit fetcher API calls (last 1 minute)                                   | 1m                 |
+| **job:http_requests_total:rate5m**                          | 5-minute average rate of filtered HTTP API requests per job                                        | 1m                 |
+| **job:http_requests_error:rate5m**                          | 5-minute HTTP error (4xx/5xx) rate (ratio) of filtered API requests per job                        | 1m                 |
+| **job:http_requests_errors**                                | Total count of HTTP errors (4xx/5xx) from filtered API requests per job                            | 1m                 |
+| **job:http_request_duration_seconds:avg1m**                 | 1-minute average HTTP request duration of filtered API calls per job                               | 1m                 |
 
 #### Prometheus Alerts
 Prometheus continuously evaluates a set of alerting rules, defined in `infra/prometheus/alert.rules.yml`.  When the conditions for an alert are met, Prometheus will fire the alert.
 
-| Alert Name                                   | Service           | Severity   | Summary of Trigger Condition                                                     |
-| :------------------------------------------- | :---------------- | :--------- | :------------------------------------------------------------------------------- |
-| **ServiceDown**                              | General           | `critical` | Service `up` metric is 0 for 1 minute (service is down).                         |
-| **HighRequestRateGenAI_Classify**            | `genai`           | `warning`  | Request rate to `/api/v1/classify` endpoint > 4 RPM for 1 minute.                |
-| **HighTotalRequestsGenAI_Classify**          | `genai`           | `warning`  | Total requests to `/api/v1/classify` endpoint > 50 in 10 minutes for 1 minute.   |
-| **HighDailyRequestsGenAI_Classify**          | `genai`           | `critical` | Total requests to `/api/v1/classify` endpoint > 90 in 1 day for 1 minute.        |
-| **HighRequestRateGenAI_Embedding**           | `genai`           | `warning`  | Request rate to `/api/v1/embeddings` endpoint > 4 RPM for 1 minute.              |
-| **HighTotalRequestsGenAI_Embedding**         | `genai`           | `warning`  | Total requests to `/api/v1/embeddings` endpoint > 50 in 10 minutes for 1 minute. |
-| **HighDailyRequestsGenAI_Embedding**         | `genai`           | `critical` | Total requests to `/api/v1/embeddings` endpoint > 90 in 1 day for 1 minute.      |
-| **HighRequestRateArticleFetcher_Articles**   | `article-fetcher` | `warning`  | Request rate to `/api/v1/articles` endpoint > 16 RPM for 1 minute.               |
-| **HighTotalRequestsArticleFetcher_Articles** | `article-fetcher` | `warning`  | Total requests to `/api/v1/articles` endpoint > 150 in 10 minutes for 1 minute.  |
-| **HighDailyRequestsArticleFetcher_Articles** | `article-fetcher` | `critical` | Total requests to `/api/v1/articles` endpoint > 2000 in 1 day for 1 minute.      |
-
+| Alert Name                                         | Service           | Severity   | Summary of Trigger Condition                                                                     |
+| :------------------------------------------------- | :---------------- | :--------- | :----------------------------------------------------------------------------------------------- |
+| **ServiceDown**                                    | General           | `critical` | Service `up` metric is 0 for 2 minute (service is down).                                         |
+| **HighRequestRateGenAI_Classify**                  | `genai`           | `warning`  | Request rate to `/api/v1/classify` endpoint > 4 RPM for 1 minute.                                |
+| **HighTotalRequestsGenAI_Classify**                | `genai`           | `warning`  | Total requests to `/api/v1/classify` endpoint > 30 in 1 hour for 1 minute.                       |
+| **HighDailyRequestsGenAI_Classify**                | `genai`           | `critical` | Total requests to `/api/v1/classify` endpoint > 90 in 1 day for 1 minute.                        |
+| **HighRequestRateGenAI_Embedding**                 | `genai`           | `warning`  | Request rate to `/api/v1/embeddings` endpoint > 4 RPM for 1 minute.                              |
+| **HighTotalRequestsGenAI_Embedding**               | `genai`           | `warning`  | Total requests to `/api/v1/embeddings` endpoint > 30 in 1 hour for 1 minute.                     |
+| **HighDailyRequestsGenAI_Embedding**               | `genai`           | `critical` | Total requests to `/api/v1/embeddings` endpoint > 90 in 1 day for 1 minute.                      |
+| **HighRequestRateArticleFetcher_ArxivInternal**    | `article-fetcher` | `warning`  | Internal call rate to ArXiv service > 16 RPM for 1 minute.                                       |
+| **HighTotalRequestsArticleFetcher_ArxivInternal**  | `article-fetcher` | `warning`  | Total internal calls to ArXiv service > 500 in 1 hour for 1 minute.                              |
+| **HighDailyRequestsArticleFetcher_ArxivInternal**  | `article-fetcher` | `critical` | Total internal calls to ArXiv service > 2000 in 1 day for 1 minute.                              |
+| **HighRequestRateArticleFetcher_RedditInternal**   | `article-fetcher` | `warning`  | Internal call rate to Reddit service > 16 RPM for 1 minute.                                      |
+| **HighTotalRequestsArticleFetcher_RedditInternal** | `article-fetcher` | `warning`  | Total internal calls to Reddit service > 500 in 1 hour for 1 minute.                             |
+| **HighDailyRequestsArticleFetcher_RedditInternal** | `article-fetcher` | `critical` | Total internal calls to Reddit service > 2000 in 1 day for 1 minute.                             |
 
 ### Grafana
 Grafana visualizes the metrics and alerts of Prometheus and can be reached via `grafana.${DOMAIN}`. To login use the default credentials `admin:admin` and either chose to setup own credentials or skip the request to do so.

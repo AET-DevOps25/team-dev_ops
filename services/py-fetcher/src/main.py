@@ -7,6 +7,9 @@ from typing import Dict, List
 
 from prometheus_fastapi_instrumentator import Instrumentator
 
+# Import Counter from prometheus_client
+from prometheus_client import Counter
+
 import logging
 from .services.arxiv_service import arxiv_fetcher
 from .services.reddit_service import reddit_fetcher
@@ -25,6 +28,17 @@ app = FastAPI(
 
 # Prometheus middleware for metrics
 Instrumentator().instrument(app).expose(app)
+
+# --- Define custom Prometheus counters ---
+arxiv_fetch_counter = Counter(
+    "arxiv_fetch_total",  # Metric name
+    "Total number of times articles were fetched from arXiv"  # Metric description
+)
+reddit_fetch_counter = Counter(
+    "reddit_fetch_total",  # Metric name
+    "Total number of times articles were fetched from Reddit"  # Metric description
+)
+
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(
@@ -55,6 +69,9 @@ async def fetch_articles(request: ArticleFetchRequest) -> ArticleFetchResponse:
         # Source-specific routing
         # ------------------------------------------------------------------
         if request.source == "arxiv":
+            # Increment the arXiv counter
+            arxiv_fetch_counter.inc()
+
             # If category already looks like an advanced arXiv query (contains cat: or all:), use as-is
             if request.category and (
                 "cat:" in request.category or "all:" in request.category
@@ -109,6 +126,9 @@ async def fetch_articles(request: ArticleFetchRequest) -> ArticleFetchResponse:
                     search_query,
                 )
         elif request.source == "reddit":
+            # Increment the Reddit counter
+            reddit_fetch_counter.inc()
+
             # Treat `category` as subreddit (fallback to free-text query if absent)
             subreddit = request.category or request.query
             articles = await reddit_fetcher.fetch(
