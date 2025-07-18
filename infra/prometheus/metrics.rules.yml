@@ -35,17 +35,41 @@ groups:
     expr: sum(rate(http_requests_total{job="genai", handler=~"/api/v1/embeddings|/api/v1/classify"}[1m])) by (handler)
   
 
-  # Fetched Articles Count - Separate Article Fetcher Calls 1d
+  # Fetched Articles Count - Separate Article Fetcher Calls (HTTP requests for /articles) 1d
   - record: job:http_requests_total:article_fetcher_articles
     expr: sum(round(increase(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[1d])))
 
-  # Fetched Articles Count - Separate Article Fetcher Calls 10m
+  # Fetched Articles Count - Separate Article Fetcher Calls (HTTP requests for /articles) 10m
   - record: job:http_requests_total:article_fetcher_articles:10m
     expr: sum(round(increase(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[10m])))
 
-  # Request Rate Article Fetcher - Separate Article Fetcher Calls
+  # Request Rate Article Fetcher - Separate Article Fetcher Calls (HTTP requests for /articles)
   - record: job:http_requests_total:rate_article_fetcher_articles
     expr: sum(rate(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[1m])) by (handler)  
+
+  # ArXiv Fetcher Call Count 1d
+  - record: job:arxiv_fetch_total:1d
+    expr: sum(round(increase(arxiv_fetch_total{job="article-fetcher"}[1d])))
+
+  # ArXiv Fetcher Call Count 10m
+  - record: job:arxiv_fetch_total:10m
+    expr: sum(round(increase(arxiv_fetch_total{job="article-fetcher"}[10m])))
+
+  # ArXiv Fetcher Call Rate 1m
+  - record: job:arxiv_fetch_total:rate1m
+    expr: sum(rate(arxiv_fetch_total{job="article-fetcher"}[1m]))
+
+  # Reddit Fetcher Call Count 1d
+  - record: job:reddit_fetch_total:1d
+    expr: sum(round(increase(reddit_fetch_total{job="article-fetcher"}[1d])))
+
+  # Reddit Fetcher Call Count 10m
+  - record: job:reddit_fetch_total:10m
+    expr: sum(round(increase(reddit_fetch_total{job="article-fetcher"}[10m])))
+
+  # Reddit Fetcher Call Rate 1m
+  - record: job:reddit_fetch_total:rate1m
+    expr: sum(rate(reddit_fetch_total{job="article-fetcher"}[1m]))
 
   # Request Rate (total actual API calls over 5 minutes)
   - record: job:http_requests_total:rate5m
