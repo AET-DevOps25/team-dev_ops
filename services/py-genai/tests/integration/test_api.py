@@ -85,7 +85,7 @@ def test_embedding_endpoints_real_caching_flow():
     """
     Tests the POST and GET /api/v1/embeddings endpoints with real dependencies.
     Requires GOOGLE_API_KEY.
-    Uses a ChromaDB container managed by testcontainers.
+    Relies on the Postgres+pgvector cache that runs in Docker-compose.
     """
     if not os.getenv("GOOGLE_API_KEY"):
         pytest.skip("GOOGLE_API_KEY not found, skipping embeddings integration test.")

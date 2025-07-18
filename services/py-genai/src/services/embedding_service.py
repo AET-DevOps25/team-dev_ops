@@ -57,7 +57,7 @@ class EmbeddingService:
             return [[] for _ in texts]
 
     async def embed_batch_with_cache(self, texts: List[str], ids: List[str]) -> Dict:
-        """Generate embeddings for multiple texts with ChromaDB caching"""
+        """Generate embeddings for multiple texts with PostgreSQL-based caching"""
         vectors: List[Any] = [None] * len(texts)
 
         # ------------------------------------------------------------------
@@ -128,7 +128,7 @@ class EmbeddingService:
         return {"vectors": vectors, "cached_count": cached_count}
 
     async def get_embeddings_by_ids(self, ids: List[str]) -> Dict:
-        """Retrieve cached embeddings by IDs from ChromaDB"""
+        """Retrieve cached embeddings by IDs from PostgreSQL"""
         try:
             with self.conn.cursor() as cur:
                 cur.execute(
@@ -157,8 +157,8 @@ class EmbeddingService:
     def get_embeddings(self, articles: List[arxiv.Result]) -> Dict[str, List[float]]:
         """
         Retrieves embeddings for a list of articles. First, it tries to fetch the
-        embeddings from the cache (ChromaDB). For any articles not found in the
-        cache, it generates new embeddings and stores them.
+        embeddings from the cache stored in PostgreSQL. For any articles not found
+        in the cache, it generates new embeddings and stores them.
         """
         article_ids = [a.get_short_id() for a in articles]
         embeddings_map = {}
