@@ -133,6 +133,17 @@ public class AnalysisOrchestrationService {
                 .bodyToMono(TopicDiscoveryResponse.class)
                 .doOnError(e -> logger.error("Failed to discover topics for query: {}", query, e));
     }
+
+    public Mono<QueryBuilderResponse> buildSourceQuery(String source, QueryBuilderRequest request) {
+        logger.info("Building query for source: {}", source);
+        return genaiWebClient.post()
+                .uri("/api/v1/query/build/{source}", source)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(QueryBuilderResponse.class)
+                .doOnError(e -> logger.error("Failed to build query for source: {}", source, e));
+    }
     
     public Mono<Map<String, List<String>>> getSourceCategories(String source) {
         logger.info("Fetching categories for source: {}", source);
