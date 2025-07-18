@@ -19,7 +19,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 5,
+  "id": 4,
   "links": [],
   "panels": [
     {
@@ -77,7 +77,8 @@
                 "value": 90
               }
             ]
-          }
+          },
+          "unit": "req/d"
         },
         "overrides": [
           {
@@ -200,10 +201,11 @@
               },
               {
                 "color": "red",
-                "value": 50
+                "value": 30
               }
             ]
-          }
+          },
+          "unit": "req/h"
         },
         "overrides": []
       },
@@ -232,7 +234,7 @@
         {
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "job:http_requests_total:classify_and_embeddings:10m",
+          "expr": "job:http_requests_total:classify_and_embeddings:1h",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -241,7 +243,7 @@
           "useBackend": false
         }
       ],
-      "title": "Classify and Embedding Calls (10m)",
+      "title": "Classify and Embedding Calls (1h)",
       "transparent": true,
       "type": "timeseries"
     },
@@ -288,7 +290,10 @@
               "mode": "line"
             }
           },
+          "fieldMinMax": false,
           "mappings": [],
+          "max": 0.1,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -297,10 +302,11 @@
               },
               {
                 "color": "red",
-                "value": 5
+                "value": 0.0666
               }
             ]
-          }
+          },
+          "unit": "reqpm"
         },
         "overrides": []
       },
@@ -329,7 +335,7 @@
         {
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "job:http_requests_total:rate_classify_and_embeddings",
+          "expr": "job:job:http_requests_total:classify_and_embeddings:1m",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -338,7 +344,7 @@
           "useBackend": false
         }
       ],
-      "title": "Classify and Embedding Rate (1m)",
+      "title": "Classify and Embedding Calls (1m)",
       "transparent": true,
       "type": "timeseries"
     },
@@ -397,7 +403,8 @@
                 "value": 2000
               }
             ]
-          }
+          },
+          "unit": "req/d"
         },
         "overrides": []
       },
@@ -426,16 +433,33 @@
         {
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "job:http_requests_total:article_fetcher_articles",
+          "expr": "job:arxiv_fetch_total:1d",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
           "range": true,
           "refId": "A",
           "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "job:reddit_fetch_total:1d",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
         }
       ],
-      "title": "Fetched Articles (1d)",
+      "title": "ArXiv & Reddit Fetched Articles (1d)",
       "transparent": true,
       "type": "timeseries"
     },
@@ -491,10 +515,11 @@
               },
               {
                 "color": "red",
-                "value": 150
+                "value": 500
               }
             ]
-          }
+          },
+          "unit": "req/h"
         },
         "overrides": []
       },
@@ -523,16 +548,33 @@
         {
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "job:http_requests_total:article_fetcher_articles:10m",
+          "expr": "job:arxiv_fetch_total:1h",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
           "range": true,
           "refId": "A",
           "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "job:reddit_fetch_total:1h",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
         }
       ],
-      "title": "Fetched Articles (10m)",
+      "title": "ArXiv & Reddit Fetched Articles (1h)",
       "transparent": true,
       "type": "timeseries"
     },
@@ -588,10 +630,11 @@
               },
               {
                 "color": "red",
-                "value": 20
+                "value": 16
               }
             ]
-          }
+          },
+          "unit": "reqpm"
         },
         "overrides": []
       },
@@ -620,16 +663,33 @@
         {
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "job:http_requests_total:rate_article_fetcher_articles",
+          "expr": "job:arxiv_fetch_total:1m",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
           "range": true,
           "refId": "A",
           "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "job:reddit_fetch_total:1m",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
         }
       ],
-      "title": "Fetched Articles Rate (1m)",
+      "title": "ArXiv & Reddit Fetched Articles (1m)",
       "transformations": [
         {
           "id": "concatenate",
@@ -653,6 +713,6 @@
   "timepicker": {},
   "timezone": "browser",
   "title": "Finer Niche API Calls",
-  "uid": "a66e3392-23e9-4c81-ba40-22a7589af313",
-  "version": 16
+  "uid": "a66e3392-23e9-4c81-ba40-22a7589af314",
+  "version": 1
 }
