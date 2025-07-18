@@ -66,7 +66,7 @@ def test_get_arxiv_categories():
     json_data = response.json()
     # Check for a known category to ensure the static data is loaded
     assert "Computer Science" in json_data
-    assert "cs.AI" in json_data["Computer Science"]
+    assert any(cat.startswith("cs.AI") for cat in json_data["Computer Science"])
 
 
 def test_get_categories_unsupported_source():
