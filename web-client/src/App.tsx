@@ -3,7 +3,7 @@ import Header from './components/Header';
 import StartExploringForm from './components/StartExploringForm';
 import AnalysisHistory from './components/AnalysisHistory';
 import { AspectRatio } from "./components/ui/aspect-ratio";
-import { analysisService, AnalyzeRequest, AnalysisResponse } from "./services/analysis";
+import { analysisApi, AnalyzeRequest, AnalysisResponse, fetchAnalyses } from "@/api/client";
 import { AnalysisResponseStatusEnum } from "@/generated/api/models/analysis-response";
 
 // Use OpenAPI generated types directly - no local interfaces needed
@@ -39,18 +39,34 @@ function App() {
     return new Promise<void>(async (resolve) => {
       try {
         setLoadingMessage('Starting analysis...');
-        const analysisId = await analysisService.startAnalysis(req);
+        const startRes = await analysisApi.startAnalysis({ analyzeRequest: req });
+        // Backend should include Location header: /api/analyses/{id}
+        const locationHeader = (startRes.headers?.location ?? startRes.headers?.Location) as string | undefined;
+        let analysisId = locationHeader ? locationHeader.split('/').pop()! : undefined;
+        if (!analysisId) {
+          // Fallback for non-spec servers that return { id } in body
+          const body: unknown = (startRes as any).data;
+          if (body && typeof body === 'object' && 'id' in (body as any)) {
+            analysisId = (body as any).id as string;
+          }
+        }
+        if (!analysisId) {
+          alert('Server response did not include analysis id. Please update backend.');
+          setLoadingMessage('');
+          resolve();
+          return;
+        }
         const pollInterval = 2000;
         const maxWaitMs = 600000; 
         const startTs = Date.now();
 
         const poll = async () => {
           try {
-            const details = await analysisService.getAnalysis(analysisId);
+            const details = await analysisApi.getAnalysis({ id: analysisId });
             // Convert technical status to friendly text for the UI button
-            const friendly = statusMessages[details.status as AnalysisResponseStatusEnum] || 'Processing…';
+            const friendly = statusMessages[details.data.status as AnalysisResponseStatusEnum] || 'Processing…';
 
-            if (details.status === AnalysisResponseStatusEnum.DiscoveringTopics) {
+            if (details.data.status === AnalysisResponseStatusEnum.DiscoveringTopics) {
               // If we just entered discovering state, reset step
               if (prevStatusRef.current !== AnalysisResponseStatusEnum.DiscoveringTopics) {
                 discoverStepRef.current = 0;
@@ -71,15 +87,15 @@ function App() {
               lastDiscoverUpdateRef.current = 0;
             }
 
-            if (details.status === AnalysisResponseStatusEnum.Completed || details.status === AnalysisResponseStatusEnum.Failed) {
-              const historyData = await analysisService.getAnalyses(20);
+            if (details.data.status === AnalysisResponseStatusEnum.Completed || details.data.status === AnalysisResponseStatusEnum.Failed) {
+              const historyData = await fetchAnalyses(20);
               setAnalyses(historyData);
               setLoadingMessage('');
               resolve();
               return;
             }
 
-            prevStatusRef.current = details.status as AnalysisResponseStatusEnum;
+            prevStatusRef.current = details.data.status as AnalysisResponseStatusEnum;
           } catch (err) {
             console.error('Polling failed', err);
           }
@@ -106,7 +122,7 @@ function App() {
     const loadAnalysisHistory = async () => {
       try {
         setIsLoadingHistory(true);
-        const historyData = await analysisService.getAnalyses(20);
+        const historyData = await fetchAnalyses(20);
         setAnalyses(historyData);
       } catch (error) {
         console.error('Failed to load analysis history:', error);
@@ -121,7 +137,7 @@ function App() {
 
   const handleDeleteAnalysis = async (id: string) => {
     try {
-      await analysisService.deleteAnalysis(id);
+      await analysisApi.deleteAnalysis({ id });
       // Remove from local state after successful deletion
       setAnalyses(analyses.filter(a => a.id !== id));
     } catch (error) {

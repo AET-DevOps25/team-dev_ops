@@ -1,6 +1,6 @@
 import React from 'react';
 import AnalysisItem from './AnalysisItem';
-import { AnalysisResponse } from '../services/analysis';
+import { AnalysisResponse } from '@/api/client';
 
 interface AnalysisHistoryProps {
   analyses: AnalysisResponse[];
@@ -28,10 +28,10 @@ const AnalysisHistory: React.FC<AnalysisHistoryProps> = ({
           key={analysis.id}
           id={analysis.id}
           query={analysis.query}
-          timestamp={(analysis as any).created_at}
-          type={(analysis as any).type === 'research' ? 'Research' : 'Community'}
-          topics={(analysis.topics as any) ?? []}
-          feedUrl={(analysis as any).feed_url}
+          timestamp={analysis.created_at}
+          type={analysis.type === 'research' ? 'Research' : 'Community'}
+          topics={analysis.topics ?? []}
+          feedUrl={analysis.feed_url}
           onDelete={onDeleteAnalysis}
           darkMode={darkMode}
         />

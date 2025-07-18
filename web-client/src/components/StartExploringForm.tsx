@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import QueryForm from './QueryForm';
 import SettingsForm from './SettingsForm';
-import { AnalyzeRequest } from "../services/analysis";
+import { AnalyzeRequest } from "@/api/client";
 
 interface StartExploringFormProps {
   onAnalyze: (req: AnalyzeRequest) => Promise<void>;
