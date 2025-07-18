@@ -1,6 +1,8 @@
 package com.nicheexplorer.apiserver.controller;
 
 import com.nicheexplorer.apiserver.service.AnalysisOrchestrationService;
+import com.nicheexplorer.generated.model.QueryBuilderRequest;
+import com.nicheexplorer.generated.model.QueryBuilderResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +41,15 @@ public class CategoryController {
     @GetMapping("/sources/{source}/categories")
     public Mono<ResponseEntity<Map<String, List<String>>>> getSourceCategories(@PathVariable("source") String source) {
         return orchestrationService.getSourceCategories(source)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/query/build/{source}")
+    public Mono<ResponseEntity<QueryBuilderResponse>> buildSourceQuery(
+            @PathVariable("source") String source,
+            @RequestBody QueryBuilderRequest request) {
+        return orchestrationService.buildSourceQuery(source, request)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
