@@ -60,8 +60,28 @@ public class AnalysisService {
             logger.warn("Could not pre-insert stub analysis row (may already exist): {}", e.getMessage());
         }
 
-        orchestrationService.classifyQuery(query)
-                .doOnSuccess(classification -> jdbcTemplate.update("UPDATE analysis SET status = ? WHERE id = ?", "CLASSIFYING", analysisId))
+        Mono<ClassifyResponse> classificationMono;
+
+        // If auto-detect is disabled, manually construct the classification from the request.
+        // The 'category' field is expected to contain the full, advanced query string.
+        if (request.getAutoDetect() != null && !request.getAutoDetect()) {
+            logger.info("Manual mode for analysis {}: source={}, category='{}'", analysisId, request.getSource(), request.getCategory());
+            ClassifyResponse manualClassification = new ClassifyResponse();
+            manualClassification.setSource(ClassifyResponse.SourceEnum.fromValue(request.getSource().getValue()));
+            manualClassification.setSourceType(
+                    "arxiv".equalsIgnoreCase(request.getSource().getValue())
+                            ? ClassifyResponse.SourceTypeEnum.RESEARCH
+                            : ClassifyResponse.SourceTypeEnum.COMMUNITY);
+            // In manual mode, the 'category' from request is actually the full feed/query string
+            manualClassification.setSuggestedCategory(request.getCategory());
+            classificationMono = Mono.just(manualClassification);
+        } else {
+            logger.info("Auto-detect mode for analysis {}", analysisId);
+            classificationMono = orchestrationService.classifyQuery(query)
+                    .doOnSuccess(classification -> jdbcTemplate.update("UPDATE analysis SET status = ? WHERE id = ?", "CLASSIFYING", analysisId));
+        }
+
+        classificationMono
                 .flatMap(classification -> {
                     // Initial save to DB
                     String analysisType = "research".equalsIgnoreCase(classification.getSourceType().getValue()) ? "research" : "community";

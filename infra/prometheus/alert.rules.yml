@@ -1,23 +1,22 @@
-# /etc/prometheus/rules/service_rules.yml
 groups:
 
 - name: service-alerts
   rules:
   - alert: ServiceDown
     expr: up == 0
-    for: 1m
+    for: 2m # Requests can take ~1 minute to process, blocking the health check endpoint -> allowing 2 minutes.
     labels:
       severity: critical
     annotations:
       summary: "Service '{{ $labels.job }}' is down"
-      description: "The service '{{ $labels.job }}' at instance '{{ $labels.instance }}' has been down for more than 1 minute."
+      description: "The service '{{ $labels.job }}' at instance '{{ $labels.instance }}' has been down for more than 2 minutes."
 
 - name: genai_alerts
   rules:
 
   # /api/v1/classify
   - alert: HighRequestRateGenAI_Classify
-    expr: sum(rate(http_requests_total{job="genai", handler="/api/v1/classify"}[1m])) > 4
+    expr: job:http_requests_total:classify_and_embeddings:1m{handler="/api/v1/classify"} > 4
     for: 1m
     labels:
       severity: warning
@@ -29,15 +28,15 @@ groups:
 
   # /api/v1/classify
   - alert: HighTotalRequestsGenAI_Classify
-    expr: sum(round(increase(http_requests_total{job="genai", handler="/api/v1/classify"}[10m]))) > 50
+    expr: sum(round(increase(http_requests_total{job="genai", handler="/api/v1/classify"}[1h]))) > 30
     for: 1m
     labels:
       severity: warning
       service: genai
       endpoint: classify
     annotations:
-      summary: "High total request count detected on genai Classify endpoint"
-      description: "The total number of requests to the genai /api/v1/classify endpoint ({{ $value }} requests) has exceeded 50 in the last 10 minutes, approaching the Gemini free tier daily limit of 100 RPD."
+      summary: "High total request count detected on genai Classify endpoint (1h)"
+      description: "The total number of requests to the genai /api/v1/classify endpoint ({{ $value }} requests) has exceeded 30 in the last 1 hour. This indicates rapid consumption of the Gemini free tier daily limit of 100 RPD."
 
   # /api/v1/classify
   - alert: HighDailyRequestsGenAI_Classify
@@ -53,7 +52,7 @@ groups:
 
   # /api/v1/embeddings
   - alert: HighRequestRateGenAI_Embedding
-    expr: sum(rate(http_requests_total{job="genai", handler="/api/v1/embeddings"}[1m])) > 4
+    expr: job:http_requests_total:classify_and_embeddings:1m{handler="/api/v1/embeddings"} > 4
     for: 1m
     labels:
       severity: warning
@@ -65,15 +64,15 @@ groups:
 
   # /api/v1/embeddings
   - alert: HighTotalRequestsGenAI_Embedding
-    expr: sum(round(increase(http_requests_total{job="genai", handler="/api/v1/embeddings"}[10m]))) > 50
+    expr: sum(round(increase(http_requests_total{job="genai", handler="/api/v1/embeddings"}[1h]))) > 30
     for: 1m
     labels:
       severity: warning
       service: genai
       endpoint: embedding
     annotations:
-      summary: "High total request count detected on genai Embedding endpoint"
-      description: "The total number of requests to the genai /api/v1/embeddings endpoint ({{ $value }} requests) has exceeded 50 in the last 10 minutes, approaching the Gemini free tier daily limit of 100 RPD."
+      summary: "High total request count detected on genai Embedding endpoint (1h)"
+      description: "The total number of requests to the genai /api/v1/embeddings endpoint ({{ $value }} requests) has exceeded 30 in the last 1 hour. This indicates rapid consumption of the Gemini free tier daily limit of 100 RPD."
   
   # /api/v1/embeddings
   - alert: HighDailyRequestsGenAI_Embedding
@@ -90,39 +89,73 @@ groups:
 
 - name: article_fetcher_alerts
   rules:
-
-  # /api/v1/articles
-  - alert: HighRequestRateArticleFetcher_Articles
-    expr: sum(rate(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[1m])) > 16
-    for: 1m
-    labels:
-      severity: warning
-      service: article-fetcher
-      endpoint: articles
-    annotations:
-      summary: "High request rate detected on article-fetcher's /api/v1/articles endpoint"
-      description: "The request rate to the article-fetcher's /api/v1/articles endpoint ({{ $value }} requests per minute) is approaching the (assumed) arXiv RSS feed limit of ~20 RPM."
   
-    # /api/v1/articles
-  - alert: HighTotalRequestsArticleFetcher_Articles
-    expr: sum(round(increase(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[10m]))) > 150
+  # --- Alerts for Internal ArXiv Fetcher Calls ---
+  
+  - alert: HighRequestRateArticleFetcher_ArxivInternal
+    expr: job:arxiv_fetch_total:1m > 16
     for: 1m
     labels:
       severity: warning
       service: article-fetcher
-      endpoint: articles
+      endpoint: arxiv_internal
     annotations:
-      summary: "High total request count detected on article-fetcher's /api/v1/articles endpoint"
-      description: "The total number of requests to the article-fetcher's /api/v1/articles endpoint ({{ $value }} requests) has exceeded 150 in the last 10 minutes."
+      summary: "High internal call rate to ArXiv fetcher detected"
+      description: "The article-fetcher is making calls to the ArXiv service at a high rate ({{ $value }} requests per minute). This might approach external API limits."
 
-  # /api/v1/articles
-  - alert: HighDailyRequestsArticleFetcher_Articles
-    expr: sum(round(increase(http_requests_total{job="article-fetcher", handler="/api/v1/articles"}[1d]))) > 2000
+  - alert: HighTotalRequestsArticleFetcher_ArxivInternal
+    expr: sum(round(increase(arxiv_fetch_total{job="article-fetcher"}[1h]))) > 500
+    for: 1m
+    labels:
+      severity: warning
+      service: article-fetcher
+      endpoint: arxiv_internal
+    annotations:
+      summary: "High total internal calls to ArXiv fetcher (1h)"
+      description: "The article-fetcher has made {{ $value }} calls to the ArXiv service in the last 1 hour. This indicates rapid consumption of its daily quota."
+
+  - alert: HighDailyRequestsArticleFetcher_ArxivInternal
+    expr: sum(round(increase(arxiv_fetch_total{job="article-fetcher"}[1d]))) > 2000
     for: 1m
     labels:
       severity: critical
       service: article-fetcher
-      endpoint: articles
+      endpoint: arxiv_internal
     annotations:
-      summary: "High daily request count detected on article-fetcher's /api/v1/articles endpoint"
-      description: "The total number of requests to the article-fetcher's /api/v1/articles endpoint today ({{ $value  }} requests) has exceeded 2000."
+      summary: "High daily internal calls to ArXiv fetcher (1d)"
+      description: "The article-fetcher has made {{ $value }} calls to the ArXiv service today, nearing daily external API limits."
+
+  # --- Alerts for Internal Reddit Fetcher Calls ---
+
+  - alert: HighRequestRateArticleFetcher_RedditInternal
+    expr: job:reddit_fetch_total:1m > 16
+    for: 1m
+    labels:
+      severity: warning
+      service: article-fetcher
+      endpoint: reddit_internal
+    annotations:
+      summary: "High internal call rate to Reddit fetcher detected"
+      description: "The article-fetcher is making calls to the Reddit service at a high rate ({{ $value }} requests per minute). This might approach external API limits."
+
+  - alert: HighTotalRequestsArticleFetcher_RedditInternal
+    expr: sum(round(increase(reddit_fetch_total{job="article-fetcher"}[1h]))) > 500
+    for: 1m
+    labels:
+      severity: warning
+      service: article-fetcher
+      endpoint: reddit_internal
+    annotations:
+      summary: "High total internal calls to Reddit fetcher (1h)"
+      description: "The article-fetcher has made {{ $value }} calls to the Reddit service in the last 1 hour. This indicates rapid consumption of its daily quota."
+
+  - alert: HighDailyRequestsArticleFetcher_RedditInternal
+    expr: sum(round(increase(reddit_fetch_total{job="article-fetcher"}[1d]))) > 2000
+    for: 1m
+    labels:
+      severity: critical
+      service: article-fetcher
+      endpoint: reddit_internal
+    annotations:
+      summary: "High daily internal calls to Reddit fetcher (1d)"
+      description: "The article-fetcher has made {{ $value }} calls to the Reddit service today, nearing daily external API limits."

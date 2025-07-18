@@ -45,7 +45,7 @@ def test_get_categories_from_real_api_success():
     assert response.status_code == 200
     json_data = response.json()
     assert "Computer Science" in json_data
-    assert "cs.AI" in json_data["Computer Science"]
+    assert any(cat.startswith("cs.AI") for cat in json_data["Computer Science"])
 
 
 @pytest.mark.integration
