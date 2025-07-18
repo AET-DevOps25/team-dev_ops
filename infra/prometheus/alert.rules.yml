@@ -4,12 +4,12 @@ groups:
   rules:
   - alert: ServiceDown
     expr: up == 0
-    for: 1m
+    for: 2m # Requests can take ~1 minute to process, blocking the health check endpoint -> allowing 2 minutes.
     labels:
       severity: critical
     annotations:
       summary: "Service '{{ $labels.job }}' is down"
-      description: "The service '{{ $labels.job }}' at instance '{{ $labels.instance }}' has been down for more than 1 minute."
+      description: "The service '{{ $labels.job }}' at instance '{{ $labels.instance }}' has been down for more than 2 minutes."
 
 - name: genai_alerts
   rules:
