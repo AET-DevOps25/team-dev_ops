@@ -43,8 +43,7 @@ service:
 
 ingress:
   className: "nginx"
-  student_id: "ge74tif"
-  base_host: ".student.k8s.aet.cit.tum.de"
+  host: "niche-explorer.student.k8s.aet.cit.tum.de"
 
   tls: 
     enabled: true

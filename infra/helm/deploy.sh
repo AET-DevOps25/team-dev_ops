@@ -22,7 +22,7 @@ cp -r "infra/prometheus" "infra/helm/monitoring-stack/prometheus"
 
 # Deploy: Run Helm deployment 
 echo "--- Deploying Helm chart to monitoring namespace ---"
-helm upgrade --install -n monitoring niche-monitoring infra/helm/monitoring-stack
+helm upgrade --install -n monitoring niche-monitoring infra/helm/monitoring-stack/
 
 echo "--- Helm monitoring deployment command succeeded ---"
 echo ""

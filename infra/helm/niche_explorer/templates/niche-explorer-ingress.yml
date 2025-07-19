@@ -9,7 +9,7 @@ metadata:
     {{- end }}
 
     nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "http://{{ .Values.ingress.student_id }}{{ .Values.ingress.base_host }}"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://{{ .Values.ingress.host }}"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-headers: "*"
 spec:
@@ -18,14 +18,14 @@ spec:
   {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
-        - "{{ .Values.ingress.student_id }}{{ .Values.ingress.base_host }}"
-        - "prometheus.{{ .Values.ingress.student_id }}{{ .Values.ingress.base_host }}"
-        - "grafana.{{ .Values.ingress.student_id }}{{ .Values.ingress.base_host }}"
+        - "{{ .Values.ingress.host }}"
+        - "prometheus.{{ .Values.ingress.host }}"
+        - "grafana.{{ .Values.ingress.host }}"
       secretName: {{ .Values.ingress.tls.secretName }}
   {{- end }}
 
   rules:
-    - host: "{{ .Values.ingress.student_id }}{{ .Values.ingress.base_host }}"
+    - host: "{{ .Values.ingress.host }}"
       http:
         paths:
           - path: /api
@@ -43,7 +43,7 @@ spec:
                 port:
                   number: {{ .Values.ui.port }}
                   
-    - host: "prometheus.{{ .Values.ingress.student_id }}{{ .Values.ingress.base_host }}"
+    - host: "prometheus.{{ .Values.ingress.host }}"
       http:
         paths:
           - path: /
@@ -54,7 +54,7 @@ spec:
                 port:
                   number: 9090
 
-    - host: "grafana.{{ .Values.ingress.student_id }}{{ .Values.ingress.base_host }}"
+    - host: "grafana.{{ .Values.ingress.host }}"
       http:
         paths:
           - path: /

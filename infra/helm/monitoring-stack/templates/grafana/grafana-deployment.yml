@@ -19,20 +19,20 @@ spec:
           - 0
       containers:
         - name: grafana
-          image: grafana/grafana:latest
+          image: "{{ .Values.grafana.image.repository }}:{{ .Values.grafana.image.tag }}"
           imagePullPolicy: IfNotPresent
           env:
             - name: GF_SERVER_ROOT_URL
-              value: "http://grafana.ge74tif.student.k8s.aet.cit.tum.de"
+              value: "http://grafana.{{ .Values.domain }}"
           ports:
-            - containerPort: 3000
+            - containerPort: {{ .Values.grafana.service.port }}
               name: http-grafana
               protocol: TCP
           readinessProbe:
             failureThreshold: 3
             httpGet:
               path: /robots.txt
-              port: 3000
+              port: {{ .Values.grafana.service.port }}
               scheme: HTTP
             initialDelaySeconds: 10
             periodSeconds: 30
@@ -44,7 +44,7 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             tcpSocket:
-              port: 3000
+              port: {{ .Values.grafana.service.port }}
             timeoutSeconds: 1
           resources:
             requests:

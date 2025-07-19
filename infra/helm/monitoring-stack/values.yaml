@@ -1,0 +1,22 @@
+domain: niche-explorer.student.k8s.aet.cit.tum.de
+
+# Default values for the Grafana chart.
+grafana:
+  image:
+    repository: grafana/grafana
+    tag: latest
+
+  service:
+    type: ClusterIP
+    port: 3000
+
+
+prometheus:
+  image:
+    repository: prom/prometheus
+    tag: latest
+  baseUrl: http://prometheus-service
+  service:
+    type: ClusterIP
+    port: 9090
+    targetPort: 9090
