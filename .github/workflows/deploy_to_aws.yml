@@ -68,8 +68,8 @@ jobs:
       - name: Set up SSH private key for Ansible
         working-directory: infra/ansible
         run: |
-          echo "${{ secrets.AWS_SSH_PRIVATE_KEY }}" > labsuser.pem
-          chmod 400 labsuser.pem
+          echo "${{ secrets.AWS_SSH_PRIVATE_KEY }}" >  ~/.ssh/labsuser.pem
+          chmod 400  ~/.ssh/labsuser.pem
           echo "SSH key file created and permissions set."
 
       # Update the Ansible inventory file with the public IPv4 address of the AWS EC2 instance
