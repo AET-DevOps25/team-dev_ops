@@ -20,7 +20,9 @@ logger.setLevel(logging.DEBUG)  # Temporary for debugging cache behavior
 class EmbeddingService:
     def __init__(self):
         self.embeddings_client = GoogleGenerativeAIEmbeddings(
-            model=settings.EMBEDDING_MODEL, google_api_key=settings.GOOGLE_API_KEY
+            model=settings.EMBEDDING_MODEL,
+            google_api_key=settings.GOOGLE_API_KEY,
+            output_dimensionality=768,
         )
 
         # ------------------------------------------------------------------
@@ -41,17 +43,26 @@ class EmbeddingService:
             raise
 
     async def embed_text(self, text: str) -> List[float]:
-        """Generates a single, non-cached embedding for a given text."""
+        """Generates a single, non-cached 768-dim embedding for a given text."""
         try:
-            return self.embeddings_client.embed_query(text)
+            return self.embeddings_client.embed_query(text, output_dimensionality=768)
         except Exception as e:
             logger.error("Embedding failed for text: %s, error: %s", text[:100], e)
             return []
 
     def _embed_batch(self, texts: List[str]) -> List[List[float]]:
-        """A private method to generate embeddings for multiple texts."""
+        """Generate embeddings for multiple texts requesting 768-dimensional vectors.
+
+        Using `output_dimensionality=768` lets us keep pgvector at 768 dimensions
+        while still benefiting from the higher-quality 3 072-dim model. This is the
+        recommended approach from Google (Matryoshka truncation happens server-side
+        instead of slicing client-side).
+        """
         try:
-            return self.embeddings_client.embed_documents(texts)
+            return self.embeddings_client.embed_documents(
+                texts,
+                output_dimensionality=768,  # server-side truncation
+            )
         except Exception as e:
             logger.error("Batch embedding failed: %s", e)
             return [[] for _ in texts]
