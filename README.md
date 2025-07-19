@@ -90,7 +90,9 @@ http-server docs -p 8088
 ```
 
 # Architecture 
-Architecture inclduing responsibilites of participating students.
+## Architecture & Team Responsibilities
+
+The following diagram illustrates the system architecture and the distribution of responsibilities among team members.
 ![Architecture Diagram](docs/Product%20backlog%20%26%20architecture/assets/Architecture_Responsibilities.png)
 
 ```
