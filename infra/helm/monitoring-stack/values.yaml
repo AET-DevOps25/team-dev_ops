@@ -1,4 +1,5 @@
 domain: niche-explorer.student.k8s.aet.cit.tum.de
+storageClass: csi-rbd-sc
 
 # Default values for the Grafana chart.
 grafana:
