@@ -133,42 +133,87 @@ team-dev_ops/infra/helm/
 ├── deploy-monitoring-stack.sh  # Script to deploy the monitoring stack
 ```
 
-Before deploying, ensure the following configurations are in place:
-- Create two namespaces on the cluster:
-    - niche-explorer: This is where the application will be hosted.
-    - monitoring: This is where Grafana and Prometheus will run.
-- Setup secrets on the cluster:
-    - Using [kubectl](https://kubernetes.io/de/docs/reference/kubectl/):
-     ```bash
-        kubectl create secret generic my-app-credentials \
-                    --from-literal=CHAIR_API_KEY="<YOUR_ACTUAL_CHAIR_API_KEY>" \
-                    --from-literal=GOOGLE_API_KEY="<YOUR_ACTUAL_GOOGLE_API_KEY>" \
-                    --from-literal=POSTGRES_DB="<YOUR_ACTUAL_POSTGRES_DB_NAME>" \
-                    --from-literal=POSTGRES_PASSWORD="<YOUR_ACTUAL_POSTGRES_PASSWORD>" \
-                    --from-literal=POSTGRES_USER="<YOUR_ACTUAL_POSTGRES_USER>" \
-                    --namespace <namespace>
-     ```
-    where:
-    - CHAIR_API_KEY: Key to an LLM
-    - GOOGLE_API_KEY: Key of [Google AI Studio](https://aistudio.google.com/)
-    - POSTGRES_DB: Name of the database
-    - POSTGRES_PASSWORD: Password for the database
-    - POSTGRES_USER: Username for the database
-    - namespace: Namespace you want to deploy to.
+### Prerequisites
+Ensure the following are installed and configured:
+- [**kubectl**](https://kubernetes.io/docs/tasks/tools/): To connected to the target Kubernetes cluster.
+- [**Helm**](https://helm.sh/docs/intro/install/): For efficient Kubernetes deployment.
+- [**.kube**] The kubeconfig for the cluster has to be stored as `~/.kube/config`
+---
 
-  
-- Configure Ingress address in `values.yml`
-- Create two namespaces in the project and configure the .kube/config file to point to the cluster:
-    - niche-explorer: Namespace for the main project
-    - monitoring: Namespace for the monitoring services.
-- Deploy the two Helm charts from the project root:
-    - niche-explorer (main application):
-        - Run `helm upgrade --install -n niche-explorer <Deployment Name> infra/helm/niche_explorer/`
-    - monitoring-stack (i.e. Grafana and Prometheus):
-        - Run `bash deploy-monitoring-stack.sh`
-    - alternatively the application and the monitoring stack can be deployed running this command `bash infra/helm/deploy.sh `.
-    - Wait around 5 minutes before accessing the application to ensure all services are up and running.
-- To uninstall / undeploy these two, run `bash infra/helm/undeploy.sh`.
+### Pre-Deployment Configuration
+The following has to be manually configured before running the deployment. If any steps fail, consider contacting the cluster admin, as priviledges might be missing.
+
+#### 1. Create Namespaces
+
+Two namespaces are required to isolate the main application from the monitoring and them both from other workloads running in the cluster.
+Create these either manually via the Kubernetes Cluster UI or by running the following commands:
+
+```bash
+# Namespace for the main application
+kubectl create namespace niche-explorer
+
+# Namespace for Prometheus and Grafana
+kubectl create namespace monitoring
+```
+
+#### 2. Create Application Secrets
+To securely provide sensitive configuration values to the application, create a Kubernetes secret in the `niche-explorer` namespace.
+
+Using `kubectl`:
+
+```bash
+kubectl create secret generic my-app-credentials \
+            --from-literal=CHAIR_API_KEY="<YOUR_ACTUAL_CHAIR_API_KEY>" \
+            --from-literal=GOOGLE_API_KEY="<YOUR_ACTUAL_GOOGLE_API_KEY>" \
+            --from-literal=POSTGRES_DB="<YOUR_ACTUAL_POSTGRES_DB_NAME>" \
+            --from-literal=POSTGRES_PASSWORD="<YOUR_ACTUAL_POSTGRES_PASSWORD>" \
+            --from-literal=POSTGRES_USER="<YOUR_ACTUAL_POSTGRES_USER>" \
+            --namespace niche-explorer
+```
+
+**Where:**
+- **`CHAIR_API_KEY`** – API key for [The Chair's LLM](https://gpu.aet.cit.tum.de/)
+- **`GOOGLE_API_KEY`** – API key for [Google AI Studio](https://aistudio.google.com/)
+- **`POSTGRES_DB`** – Name of the PostgreSQL database to be used
+- **`POSTGRES_PASSWORD`** – Password for the PostgreSQL user
+- **`POSTGRES_USER`** – Username for the PostgreSQL database
+
+**Note:** The database credentials are created and configured here. This is the only place where they need to be defined for the Kubernetes deployment - no further configuration of them is required elsewhere.
+
+### 3. Configure Helm Values
+
+Environment-specific parameters for the deployment are managed in the Helm values file located at `infra/helm/customization.values.yaml`. This file must be configured before deployment.
+
+Update the following key parameters:
+
+| Parameter                       | Description                                                                              | Example                                   |
+|:--------------------------------|:-----------------------------------------------------------------------------------------|:------------------------------------------|
+| `base_imagedomain`              | The domain of the container registry where the application images are stored.            | `ghcr.io/deployer-organization`           |
+| `ingress.host`                  | The public-facing domain name where the application will be accessible.                  | `niche-explorer.deployer-company.com`     |
+| `ingress.tls.issuer.acme.email` | The email address for obtaining a TLS certificate from Let's Encrypt (ACME).             | `deployer-email@example.com`              |
+
+**For CI/CD Deployments:** If deploying via a pipeline (e.g., a GitHub Action), the configured `customization.values.yaml` file must be committed and pushed to the repository. The automation pipeline relies on this file to configure the release.
+
+### Deployment:
+
+#### Command line Deployment / Uninstallation:
+
+**Deployment** To deploy both the application and the monitoring stack in the correct order, run the following command from the project's root directory:
+```bash
+bash infra/helm/deploy.sh
+```
+**Note** Wait around 5 minutes before accessing the application to ensure all services are up and running.#
+
+**Uninstal** To uninstall / undeploy these two, run `bash infra/helm/undeploy.sh` from the project's root directory.
+
+#### CI/CD Deployments
+
+**Prerequisite** This requires creating a GitHub secret called `KUBECONFIG`, containing the content of the kuberconfig obtained by the cluster.
+
+The Kubernetes lifecycle is automated using two dedicated GitHub Actions:
+
+*   **`Deploy to Kubernetes Cluster`**: Automatically handles the deployment of the application to.
+*   **`Undeploy Kubernetes Cluster Deployment`**: Manages the complete uninstallation of the application from the cluster. (Given it was deployed using the GitHub action)
 
 ## AWS Deployment
 
