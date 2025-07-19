@@ -1,7 +1,7 @@
-# This file contains the default values for the Niche Explorer Helm chart.
+# This file contains the default values for the Niche Explorer application Helm chart.
 
 replicaCount: 1
-base_imagedomain: "ghcr.io/aet-devops25/team-dev_ops/"
+base_imagedomain: "ghcr.io/aet-devops25/team-dev_ops/" # Default value, adapt for manual chart deployments
 release: "latest" # Update to branch name when not operating on main branch
 
 # Client service
@@ -43,8 +43,7 @@ service:
 
 ingress:
   className: "nginx"
-  student_id: "ge74tif"
-  base_host: ".student.k8s.aet.cit.tum.de"
+  host: "niche-explorer.student.k8s.aet.cit.tum.de"  # Default value in this project scope, adapt for manual chart deployments
 
   tls: 
     enabled: true
@@ -55,7 +54,7 @@ ingress:
       name: "letsencrypt-prod-issuer"
       
       acme:
-        email: "manuel.wilhelm@tum.de"
+        email: "niche-explorer@tum.de"  # Dummy value, adapt for manual chart deployments
         server: "https://acme-v02.api.letsencrypt.org/directory" # For testing: https://acme-staging-v02.api.letsencrypt.org/directory
         privateKeySecretName: "letsencrypt-prod-issuer-account-key"
   

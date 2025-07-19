@@ -3,16 +3,18 @@
 services:
   traefik:
     command:
+      - "--configfile=/etc/traefik/traefik.yml"
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443" # Explicitly define websecure entrypoint
+      - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.addServicesLabels=true"
     ports:
-      - "80:80"
+      - "80:80" # HTTP
       - "8080:8080" # Traefik Dashboard
-      - "8082:8082" # Metrics entrypoint
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`${DOMAIN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"

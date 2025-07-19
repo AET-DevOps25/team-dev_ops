@@ -6,8 +6,8 @@ spec:
   selector:
     app: grafana
   sessionAffinity: None
-  type: ClusterIP
+  type: {{ .Values.grafana.service.type }}
   ports:
     - protocol: TCP
-      port: 3000
-      targetPort: 3000
+      port: {{ .Values.grafana.service.port }}
+      targetPort: {{ .Values.grafana.service.port }}

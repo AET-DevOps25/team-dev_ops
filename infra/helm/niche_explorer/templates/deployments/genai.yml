@@ -12,6 +12,7 @@ spec:
     metadata:
       labels:
         app: {{ .Values.service.genai.name }}
+        monitoring: "true"
     spec:
       containers:
         - name: {{ .Values.service.genai.name }}

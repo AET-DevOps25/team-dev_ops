@@ -12,6 +12,7 @@ spec:
     metadata:
       labels:
         app: {{ .Values.service.topic_discovery.name }}
+        monitoring: "true"
     spec:
       containers:
         - name: {{ .Values.service.topic_discovery.name }}

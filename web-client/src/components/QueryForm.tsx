@@ -27,7 +27,8 @@ const QueryForm: React.FC<QueryFormProps> = ({
   // Handler for key presses on the input field
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      if (query.trim() && !isLoading && !showSettings) {
+      // Enter will also work, when the settings panel is open.
+      if (query.trim() && !isLoading) {
         e.preventDefault();
         onAnalyze();
       }

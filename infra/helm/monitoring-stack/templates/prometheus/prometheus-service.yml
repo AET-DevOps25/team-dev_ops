@@ -6,8 +6,8 @@ metadata:
 spec:
   selector:
     app: prometheus-server
-  type: ClusterIP
+  type: {{ .Values.prometheus.service.type }}
   ports:
     - protocol: TCP
-      port: 9090
-      targetPort: 9090
+      port: {{ .Values.prometheus.service.port }}
+      targetPort: {{ .Values.prometheus.service.port }}

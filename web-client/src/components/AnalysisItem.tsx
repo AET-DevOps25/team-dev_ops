@@ -97,7 +97,7 @@ const AnalysisItem: React.FC<AnalysisItemProps> = ({
 
     // Fallback – unknown query pattern
     return {
-      type: 'Other',
+      type: 'ArXiv',
       details: queryPart,
       queryType: 'other'
     };

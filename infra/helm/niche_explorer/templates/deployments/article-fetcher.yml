@@ -12,6 +12,7 @@ spec:
     metadata:
       labels:
         app: {{ .Values.service.article_fetcher.name }}
+        monitoring: "true"
     spec:
       containers:
         - name: {{ .Values.service.article_fetcher.name }}
