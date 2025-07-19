@@ -69,6 +69,7 @@
             }
           },
           "mappings": [],
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -172,6 +173,7 @@
             }
           },
           "mappings": [],
+          "min": 0,
           "noValue": "No Requests made",
           "thresholds": {
             "mode": "absolute",
@@ -267,6 +269,7 @@
             }
           },
           "mappings": [],
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
