@@ -1,5 +1,9 @@
-domain: niche-explorer.student.k8s.aet.cit.tum.de
+# This file contains the default values for the monitoring stack Helm chart of the Niche Explorer application.
+
 storageClass: csi-rbd-sc
+
+ingress:
+  host: niche-explorer.student.k8s.aet.cit.tum.de # Default value, adapt to your needs for manual deployments
 
 # Default values for the Grafana chart.
 grafana:

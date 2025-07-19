@@ -23,7 +23,7 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: GF_SERVER_ROOT_URL
-              value: "http://grafana.{{ .Values.domain }}"
+              value: "http://grafana.{{ .Values.ingress.host }}"
           ports:
             - containerPort: {{ .Values.grafana.service.port }}
               name: http-grafana
