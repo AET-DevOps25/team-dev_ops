@@ -9,7 +9,7 @@
 
 **Catch emerging research trends in seconds.** Type a question, NicheExplorer fetches the latest papers & discussions, clusters them into semantic topics and presents an interactive report.
 
-> 🌐 **Live demo:** _coming soon_ (TODO)
+🌐 **Demo Video:** https://www.youtube.com/watch?v=JZuyDbpnB-A
 
 ## Demo
 
@@ -60,6 +60,11 @@ NicheExplorer is a microservices-based application that leverages machine learni
 | article-fetcher  | FastAPI + Python       | 8200 | Content retrieval and RSS processing [[docs](services/py-fetcher/README.md)] |
 | db               | PostgreSQL + pgvector  | 5432 | Data persistence and vector search        |
 
+## Product Backlog
+
+For a up-to-date list of user stories and their implementation status, see the
+[Product Backlog](docs/Product%20backlog%20%26%20architecture/README.md).
+
 ## API Documentation
 
 The complete REST API specification is available in `api/openapi.yaml` and published automatically via GitHub Pages:
@@ -84,9 +89,9 @@ redoc-cli bundle api/openapi.yaml -o docs/api.html
 http-server docs -p 8088
 ```
 
-# Architecture
-
-![Architecture Diagram](docs/Product%20backlog%20%26%20architecture/assets/Architecture.png)
+# Architecture 
+Architecture inclduing responsibilites of participating students.
+![Architecture Diagram](docs/Product%20backlog%20%26%20architecture/assets/Architecture_Responsibilities.png)
 
 ```
 team-dev_ops/
