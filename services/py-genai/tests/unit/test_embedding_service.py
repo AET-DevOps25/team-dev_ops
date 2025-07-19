@@ -102,7 +102,9 @@ async def test_embed_batch_with_cache_all_new(mock_embedding_service):
     # Check that it tried to read from the DB
     fake_cur.execute.assert_called_once()
     # Check that it called Google's API to generate new embeddings
-    mock_google_embed.embed_documents.assert_called_once_with(texts)
+    mock_google_embed.embed_documents.assert_called_once_with(
+        texts, output_dimensionality=768
+    )
     # Check that it tried to write the new embeddings back to the DB
     mock_execute_batch.assert_called_once()
 
@@ -132,6 +134,8 @@ async def test_embed_batch_with_cache_some_cached(mock_embedding_service):
     assert result["vectors"][0] == [0.5, 0.6]  # The vector from the cache
     assert result["vectors"][1] == [1.0, 1.1]  # The newly generated vector
     # Check that it called Google's API with only the single new text
-    mock_google_embed.embed_documents.assert_called_once_with(["new text"])
+    mock_google_embed.embed_documents.assert_called_once_with(
+        ["new text"], output_dimensionality=768
+    )
     # Check that it tried to write the new embedding back to the DB
     mock_execute_batch.assert_called_once()
