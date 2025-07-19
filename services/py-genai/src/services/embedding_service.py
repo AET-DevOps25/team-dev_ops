@@ -20,7 +20,9 @@ logger.setLevel(logging.DEBUG)  # Temporary for debugging cache behavior
 class EmbeddingService:
     def __init__(self):
         self.embeddings_client = GoogleGenerativeAIEmbeddings(
-            model=settings.EMBEDDING_MODEL, google_api_key=settings.GOOGLE_API_KEY
+            model=settings.EMBEDDING_MODEL,
+            google_api_key=settings.GOOGLE_API_KEY,
+            output_dimensionality=768,
         )
 
         # ------------------------------------------------------------------
