@@ -51,20 +51,6 @@ npm run generate-client
 
 ## User Flow
 
-Below is a high-level interaction flow from the point a user submits a query until results are rendered:
-
-```mermaid
-flowchart TD
-  User["User"] --> QF["QueryForm component"]
-  QF --> Hook["useStartAnalysis hook"]
-  Hook --> APIStart["analysisApi.startAnalysis()"]
-  APIStart --> APIServer["Spring API Server"]
-  APIServer --> Pipeline["Async pipeline (classification → fetch → cluster)"]
-  Pipeline -->|Status updates| Poll["analysisApi.getAnalysis() (polling)"]
-  Poll --> State["React State"]
-  State --> UI["AnalysisHistory & TopicResult render"]
-```
-
 1. **QueryForm** collects the search terms and hands control to `useStartAnalysis`.
 2. **useStartAnalysis** sends a `startAnalysis` request via the generated OpenAPI client.
 3. The **Spring API Server** kicks off an asynchronous pipeline (LLM classification → article fetcher → embedding & topic discovery).
