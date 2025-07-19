@@ -1,0 +1,27 @@
+# This file contains the default values for the monitoring stack Helm chart of the Niche Explorer application.
+
+storageClass: csi-rbd-sc
+
+ingress:
+  host: niche-explorer.student.k8s.aet.cit.tum.de # Default value, adapt to your needs for manual deployments
+
+# Default values for the Grafana chart.
+grafana:
+  image:
+    repository: grafana/grafana
+    tag: latest
+
+  service:
+    type: ClusterIP
+    port: 3000
+
+
+prometheus:
+  image:
+    repository: prom/prometheus
+    tag: latest
+  baseUrl: http://prometheus-service
+  service:
+    type: ClusterIP
+    port: 9090
+    targetPort: 9090

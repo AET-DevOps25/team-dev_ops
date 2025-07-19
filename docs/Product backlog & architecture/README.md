@@ -9,17 +9,16 @@ Since Researchers, Founders and Product Managers all share the core need to disc
 
 Prepare a simple backlog in a Markdown table or GitHub Project. Each item should be a feature or task.
 
-| # | Persona   | I want to …                                                        | So that …                                                           |
-|---|-----------|--------------------------------------------------------------------|----------------------------------------------------------------------|
-| 1 | Innovator | Enter my  query (e.g. "fast-growing CV trends")              | I quickly identify emerging trends relevant to my interests          |
-| 2 | Innovator | Automatically see sources based on my query           | I get accurate and relevant articles without manual searching        |
-| 3 | Innovator | Filter the latest articles from selected RSS feeds by time (1 week, 1 month etc.)                   | I stay updated with the most recent information                      |
-| 4 | Innovator | Read concise explanations of each identified trend                 | I quickly grasp why each trend matters                               |
-| 5 | Innovator | Access relevant text snippets from original sources                | I easily verify and explore deeper into interesting trends           |
-| 6 | Innovator | Have my analysis automatically saved                               | I don't need to repeat my analysis every session                     |
-| 7 | Innovator | Get updated analysis when reopening the chat                       | I effortlessly maintain continuous awareness of latest developments  |
-| 8| Innovator | Customize the number of articles analyzed per session              | I control the depth and breadth of my analysis                       |
-
+| # | Persona | I want to … | So that … | Status |
+|---|---------|-------------|-----------|--------|
+| 1 | Innovator | Enter my query (e.g. "fast-growing CV trends") | I quickly identify emerging trends relevant to my interests | ✅ Implemented – front-end `QueryForm` + Spring API `POST /analyses` |
+| 2 | Innovator | Automatically see sources based on my query | I get accurate and relevant articles without manual searching | ✅ Implemented – GenAI `classifyQuery` picks arXiv vs Reddit |
+| 3 | Innovator | Read concise explanations of each identified trend | I quickly grasp why each trend matters | ✅ Implemented – py-topics + LLM generate 5-word title & 2-sentence summary |
+| 4 | Innovator | Access relevant text snippets from original sources | I easily verify and explore deeper into interesting trends | ✅ Implemented – `TopicResult` component shows article snippet & link |
+| 5 | Innovator | Have my analysis automatically saved | I don't need to repeat my analysis every session | ✅ Implemented – results persisted in Postgres & listed in history |
+| 6 | Innovator | Customize the number of articles analyzed per session | I control the depth and breadth of my analysis | ✅ Implemented – Settings form sends `maxArticles` to API |
+| 7 | Innovator | Filter the latest articles from selected RSS feeds by time (1 week, 1 month …) | I stay updated with the most recent information | ⏳ Partially – backend supports timeframe filters; we added filter for amount of latest articles instead  |
+| 8 | Innovator | Get updated analysis when reopening the chat | I effortlessly maintain continuous awareness of latest developments | 🔄 Planned – polling works during a session; scheduled re-analysis not yet |
 
 ## Initial System Structure
 ### Core Idea:

@@ -12,6 +12,7 @@ spec:
     metadata:
       labels:
         app: {{ .Values.service.api.name }}
+        monitoring: "true"
     spec:
       containers:
         - name: {{ .Values.service.api.name }}

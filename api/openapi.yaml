@@ -18,7 +18,7 @@ servers:
     description: API Gateway - All requests are routed through the gateway.
 
 paths:
-  # Spring API Gateway endpoints (ge74tif.student.k8s.aet.cit.tum.de:8080)
+  # Spring API Gateway endpoints (domain:8080)
   /api/v1/analyses:
     post:
       tags: [Analysis]
@@ -142,7 +142,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  # GenAI Service endpoints (ge74tif.student.k8s.aet.cit.tum.de:8000)
+  # GenAI Service endpoints (domain:8000)
   /api/v1/classify:
     post:
       tags: [AI]
@@ -318,7 +318,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  # Article Fetcher Service endpoints (ge74tif.student.k8s.aet.cit.tum.de:8200)
+  # Article Fetcher Service endpoints (domain:8200)
   /api/v1/articles:
     post:
       tags: [Articles]
@@ -383,7 +383,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  # Topic Discovery Service endpoints (ge74tif.student.k8s.aet.cit.tum.de:8100)
+  # Topic Discovery Service endpoints (domain:8100)
   /api/v1/topics/discover:
     post:
       tags: [Topics]

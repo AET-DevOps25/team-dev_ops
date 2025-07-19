@@ -1,0 +1,10 @@
+# Configure each of the following values to customize the deployment of your Niche Explorer application!
+
+base_imagedomain: "ghcr.io/aet-devops25/team-dev_ops/" # Base domain for fetching the docker images.
+
+ingress:
+  host: "niche-explorer.student.k8s.aet.cit.tum.de" # Host domain for the Niche Explorer application.
+  tls:
+    issuer:
+      acme:
+        email: "manuel.wilhelm@tum.de" # Email for Let's Encrypt Certificate.
