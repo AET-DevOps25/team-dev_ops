@@ -60,7 +60,7 @@ NicheExplorer is a microservices-based application that leverages machine learni
 | article-fetcher  | FastAPI + Python       | 8200 | Content retrieval and RSS processing [[docs](services/py-fetcher/README.md)] |
 | db               | PostgreSQL + pgvector  | 5432 | Data persistence and vector search        |
 
-➡️ **Traefik Dashboard**: [http://localhost:8082/dashboard/](http://localhost:8082/dashboard/)
+➡️ **Traefik Dashboard**: [http://localhost:8080/dashboard/](http://localhost:8080/dashboard/)
 
 ## API Documentation
 
