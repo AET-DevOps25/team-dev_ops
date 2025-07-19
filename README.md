@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Build Docker](https://github.com/AET-DevOps25/team-dev_ops/actions/workflows/build_docker.yml/badge.svg)](https://github.com/AET-DevOps25/team-dev_ops/actions/workflows/build_docker.yml)
 [![Deploy Helm](https://github.com/AET-DevOps25/team-dev_ops/actions/workflows/deploy_helm.yml/badge.svg)](https://github.com/AET-DevOps25/team-dev_ops/actions/workflows/deploy_helm.yml)
-[![Manual Docker Deploy](https://github.com/AET-DevOps25/team-dev_ops/actions/workflows/deploy_docker_manual_input.yml/badge.svg)](https://github.com/AET-DevOps25/team-dev_ops/actions/workflows/deploy_docker_manual_input.yml)
+[![Deploy to AWS](https://github.com/AET-DevOps25/team-dev_ops/actions/workflows/deploy_to_aws.yml/badge.svg)](https://github.com/AET-DevOps25/team-dev_ops/actions/workflows/deploy_to_aws.yml)
 
 **Catch emerging research trends in seconds.** Type a question, NicheExplorer fetches the latest papers & discussions, clusters them into semantic topics and presents an interactive report.
 
