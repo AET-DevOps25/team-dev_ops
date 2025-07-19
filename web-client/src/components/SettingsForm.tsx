@@ -45,6 +45,18 @@ const SettingsForm: React.FC<SettingsFormProps> = ({
   const [categories, setCategories] = useState<Record<string, string[]>>({});
   const [categoriesLoading, setCategoriesLoading] = useState(true);
 
+  // Handler for key presses on input fields
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Check if Enter key was pressed
+    if (e.key === 'Enter') {
+      // Trigger analysis if the feed is valid and not currently loading
+      if (feed.trim() && !isLoading) {
+        e.preventDefault(); // Suppress default form submission of the Browser
+        onAnalyze();
+      }
+    }
+  };
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -69,10 +81,10 @@ const SettingsForm: React.FC<SettingsFormProps> = ({
 
   // Update feed whenever category or (optional) search terms change
   useEffect(() => {
-    if (source !== 'research') return;
-
-    // If user provided search terms, build advanced query via backend
-    if (searchTerms.trim()) {
+    if (source !== 'research') {
+      onFeedChange("computervision"); // Default subreddit
+    
+  } else if (searchTerms.trim()) { // If user provided search terms, build advanced query via backend
       fetch('/api/v1/query/build/arxiv', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -86,6 +98,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({
       onFeedChange(selectedCategory);
     }
   }, [searchTerms, selectedCategory, source, onFeedChange]);
+
   return (
     <div className="flex flex-col space-y-6 h-full">
       <div className="space-y-2">
@@ -101,6 +114,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({
             const clamped = isNaN(raw) ? 1 : Math.min(150, Math.max(1, raw));
             onMaxArticlesChange(clamped);
           }}
+          onKeyDown={handleKeyDown} // Enter key triggers analysis
           className="w-full"
         />
         <p className="text-sm text-muted-foreground">
@@ -122,6 +136,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({
             const clamped = isNaN(raw) ? 1 : Math.min(7, Math.max(1, raw));
             onNrTopicsChange(clamped);
           }}
+          onKeyDown={handleKeyDown} // Enter key triggers analysis
           className="w-full"
         />
         <p className="text-sm text-muted-foreground">
@@ -155,6 +170,8 @@ const SettingsForm: React.FC<SettingsFormProps> = ({
               className="w-full border border-input rounded-md p-2"
             >
               <option value="research">Research (arXiv)</option>
+              <option value="community">Community (Reddit)</option>
+
             </select>
           </div>
 
@@ -199,6 +216,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({
                   placeholder="e.g., graph neural network, transformer"
                   value={searchTerms}
                   onChange={(e) => setSearchTerms(e.target.value)}
+                  onKeyDown={handleKeyDown} // Enter key triggers analysis
                   className="w-full"
                 />
                 <p className="text-sm text-muted-foreground">
@@ -226,6 +244,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({
                 placeholder="e.g., computervision"
                 value={feed}
                 onChange={(e) => onFeedChange(e.target.value)}
+                onKeyDown={handleKeyDown} // Enter key triggers analysis
                 className="w-full"
               />
               <p className="text-sm text-muted-foreground">

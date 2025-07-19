@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
-import { Article } from '../services/analysis';
+import { Article } from '@/api/client';
 
 interface TopicResultProps {
   title: string;

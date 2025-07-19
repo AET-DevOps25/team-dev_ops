@@ -40,9 +40,6 @@ public class AnalysisServiceTest {
     @Mock
     private AnalysisOrchestrationService orchestrationService;
 
-    @Mock
-    private ObjectMapper objectMapper;
-
     @InjectMocks
     private AnalysisService analysisService;
 

@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import TopicResult from './TopicResult';
-import { Topic } from '../services/analysis';
+import { Topic } from '@/api/client';
 
 interface AnalysisItemProps {
   id: string;

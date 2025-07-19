@@ -672,8 +672,9 @@ components:
           description: Minimum articles per topic
         nr_topics:
           type: integer
-          nullable: true
-          description: The desired number of topics to be generated. Set to null for automatic topic number reduction.
+          default: 5
+          minimum: 1
+          description: Maximum number of topics to generate.
       required: [query, article_ids, articles]
 
     Topic:
@@ -732,7 +733,7 @@ components:
           description: Auto-detect the best source when `source` is omitted.
         max_articles:
           type: integer
-          default: 100
+          default: 50
           minimum: 1
           description: Cap on number of articles processed.
         nr_topics:
